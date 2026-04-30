@@ -34,14 +34,14 @@ const Hero = () => {
 
   return (
     <section id="hero" className="relative h-screen w-full overflow-hidden bg-black">
-      <AnimatePresence mode="wait">
+      <AnimatePresence initial={false}>
         {images.length > 0 && (
           <motion.img 
             key={currentIndex}
             style={{ y }}
-            initial={{ opacity: 0, scale: 1.1 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 1 }}
             transition={{ duration: 1.5, ease: "easeInOut" }}
             src={images[currentIndex]} 
             alt="Hero" 

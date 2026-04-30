@@ -8,12 +8,12 @@ import Showcase from '../components/sections/Showcase';
 import Footer from '../components/layout/Footer';
 import { Project } from '../types';
 
-const Home = ({ onSelectProject }: { onSelectProject: (p: Project) => void }) => {
+const Home = () => {
   return (
     <>
       <Hero />
       <About />
-      <Gallery onSelectProject={onSelectProject} />
+      <Gallery />
       <Services />
       <Testimonials />
       <Showcase />

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useSearchParams } from 'react-router-dom';
 import { 
   Plus, Edit2, Trash2, LogOut, X, Save, 
   Image as ImageIcon, MessageSquare, LayoutGrid, 
@@ -27,7 +28,9 @@ interface Message {
 }
 
 export const Dashboard = () => {
-  const [activeTab, setActiveTab] = useState<'projects' | 'messages' | 'settings'>('projects');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const activeTab = searchParams.get('tab') || 'projects';
+  const setActiveTab = (tab: string) => setSearchParams({ tab });
   const [projects, setProjects] = useState<Project[]>([]);
   const [messages, setMessages] = useState<Message[]>([]);
   const { settings, updateSetting, refresh: refreshSettings } = useSettings();

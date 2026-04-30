@@ -4,15 +4,14 @@ import { motion } from 'framer-motion';
 export const PageHero = ({ title, bgImage, subtitle, children }: { title: string, bgImage: string, subtitle?: string, children?: React.ReactNode }) => {
   return (
     <section className="min-h-[80vh] relative overflow-hidden bg-black text-white selection:bg-white selection:text-black pt-32 pb-24 px-6 flex flex-col justify-end">
-      <motion.img 
-        initial={{ scale: 1.1, opacity: 0 }}
-        animate={{ scale: 1, opacity: 0.6 }}
-        transition={{ duration: 1.5, ease: 'easeOut' }}
-        src={bgImage} 
-        alt={title} 
-        className="absolute inset-0 w-full h-full object-cover"
-      />
-      <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
+      {bgImage && (
+        <img 
+          src={bgImage} 
+          alt={title} 
+          className="absolute inset-0 w-full h-full object-cover"
+        />
+      )}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
       
       <div className="relative z-10 max-w-[1400px] mx-auto w-full flex flex-col justify-end h-full mt-auto">
         <motion.div 

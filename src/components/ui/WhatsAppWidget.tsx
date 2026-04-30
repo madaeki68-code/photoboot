@@ -9,6 +9,7 @@ const WhatsAppWidget = () => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
+    location: '',
     inquiry_type: 'Pertanyaan Umum',
     message: ''
   });
@@ -23,28 +24,36 @@ const WhatsAppWidget = () => {
     setStatus('submitting');
 
     try {
-      // 1. Save to Supabase
+      // 1. Prepare data for Supabase (merging location into message since location column doesn't exist)
+      const dataToSave = {
+        name: formData.name,
+        email: formData.email,
+        inquiry_type: formData.inquiry_type,
+        message: `Lokasi: ${formData.location}\n\n${formData.message}`
+      };
+
+      // 2. Save to Supabase
       const { error } = await supabase
         .from('messages')
-        .insert([formData]);
+        .insert([dataToSave]);
 
       if (error) throw error;
 
-      // 2. Format WA message
+      // 3. Format WA message
       const waNumber = '6285693762240';
-      const text = `Halo Admin Vena,\n\nNama: ${formData.name}\nEmail: ${formData.email}\nTipe: ${formData.inquiry_type}\n\nPesan:\n${formData.message}`;
+      const text = `Halo Admin Vena,\n\nNama: ${formData.name}\nEmail: ${formData.email}\nLokasi: ${formData.location}\nTipe: ${formData.inquiry_type}\n\nPesan:\n${formData.message}`;
       const encodedText = encodeURIComponent(text);
       const waUrl = `https://wa.me/${waNumber}?text=${encodedText}`;
 
-      // 3. Update status
+      // 4. Update status
       setStatus('success');
 
-      // 4. Redirect to WhatsApp after a short delay
+      // 5. Redirect to WhatsApp after a short delay
       setTimeout(() => {
         window.open(waUrl, '_blank');
         setIsOpen(false);
         setStatus('idle');
-        setFormData({ name: '', email: '', inquiry_type: 'Pertanyaan Umum', message: '' });
+        setFormData({ name: '', email: '', location: '', inquiry_type: 'Pertanyaan Umum', message: '' });
       }, 2000);
 
     } catch (err) {
@@ -116,12 +125,12 @@ const WhatsAppWidget = () => {
                       />
                     </div>
                     <div className="space-y-1">
-                      <label className="text-[10px] uppercase tracking-widest text-gray-400 font-medium">lokasi</label>
+                      <label className="text-[10px] uppercase tracking-widest text-gray-400 font-medium">Lokasi</label>
                       <input
                         required
                         type="text"
-                        name="Lokasi"
-                        value={formData.lokasi}
+                        name="location"
+                        value={formData.location}
                         onChange={handleChange}
                         placeholder="Jakarta"
                         className="w-full bg-gray-50 border border-gray-100 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-[#25D366] transition-colors"

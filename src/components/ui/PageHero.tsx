@@ -17,20 +17,16 @@ const PageHero: React.FC<PageHeroProps> = ({ title, subtitle, image, height = "h
 
   return (
     <section className={`relative ${height} w-full overflow-hidden bg-black flex items-center justify-center`}>
-      {image ? (
+      {image && (
         <motion.img 
           style={{ y }}
-          initial={{ opacity: 0, scale: 1.1 }}
+          initial={{ opacity: 1, scale: 1 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 1.5, ease: "easeOut" }}
+          transition={{ duration: 0 }}
           src={image} 
           alt={title} 
           className="absolute inset-0 w-full h-[120%] object-cover origin-top"
         />
-      ) : (
-        <div className="absolute inset-0 flex items-center justify-center bg-gray-900/20">
-           <ImageIcon size={48} strokeWidth={1} className="text-white/10" />
-        </div>
       )}
       
       <div className="absolute inset-0 bg-gradient-to-t from-white/40 via-transparent to-transparent" />

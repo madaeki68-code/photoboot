@@ -1,13 +1,69 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import FadeIn from '../ui/FadeIn';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Loader2 } from 'lucide-react';
 import { Project } from '../../types';
+import { useParams, useNavigate } from 'react-router-dom';
+import { supabase } from '../../lib/supabase';
 
-const ProjectDetail = ({ project, onBack }: { project: Project, onBack: () => void, key?: React.Key }) => {
+const ProjectDetail = () => {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const [project, setProject] = useState<Project | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchProject = async () => {
+      if (!id) return;
+      
+      try {
+        setLoading(true);
+        const { data, error } = await supabase
+          .from('projects')
+          .select('*')
+          .eq('id', id)
+          .single();
+
+        if (error) throw error;
+
+        if (data) {
+          setProject({
+            id: data.id,
+            title: data.title,
+            location: data.location,
+            mainImg: data.main_img,
+            tag: data.tag,
+            description: data.description,
+            detailImages: data.detail_images || [],
+            order: data.order
+          });
+        }
+      } catch (err) {
+        console.error('Error fetching project:', err);
+        navigate('/gallery');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProject();
+  }, [id, navigate]);
+
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [project]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
+      </div>
+    );
+  }
+
+  if (!project) return null;
+
+  const onBack = () => navigate(-1);
 
   return (
     <motion.div 
@@ -41,7 +97,7 @@ const ProjectDetail = ({ project, onBack }: { project: Project, onBack: () => vo
                 <div className="w-10 h-10 rounded-full border border-gray-100 flex items-center justify-center group-hover:bg-[#1F2021] group-hover:text-white transition-all">
                   <ArrowLeft size={16} />
                 </div>
-                Kembali ke galeri
+                Kembali
               </button>
             </FadeIn>
           </div>
@@ -69,7 +125,7 @@ const ProjectDetail = ({ project, onBack }: { project: Project, onBack: () => vo
             <div className="w-16 h-16 rounded-full border border-gray-100 flex items-center justify-center group-hover:bg-[#1F2021] group-hover:text-white transition-all">
               <ArrowLeft size={24} />
             </div>
-            Kembali ke galeri utama
+            Kembali
           </button>
         </div>
       </div>

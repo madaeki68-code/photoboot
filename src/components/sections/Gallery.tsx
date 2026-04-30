@@ -5,8 +5,10 @@ import { supabase } from '../../lib/supabase';
 import { Project } from '../../types';
 import { Section } from '../ui/Section';
 import Typography from '../ui/Typography';
+import { useNavigate } from 'react-router-dom';
 
-const Gallery = ({ onSelectProject }: { onSelectProject: (project: Project) => void }) => {
+const Gallery = () => {
+  const navigate = useNavigate();
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -111,7 +113,7 @@ const Gallery = ({ onSelectProject }: { onSelectProject: (project: Project) => v
           <FadeIn key={proj.id} delay={idx * 0.1}>
             <div 
               className="group cursor-pointer"
-              onClick={() => onSelectProject(proj)}
+              onClick={() => navigate(`/project/${proj.id}`)}
             >
               <div className="relative overflow-hidden rounded-sm mb-3 md:mb-6 bg-gray-50 aspect-[4/5]">
                 {proj.mainImg ? (

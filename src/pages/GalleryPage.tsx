@@ -11,7 +11,7 @@ import { Image as ImageIcon } from 'lucide-react';
 
 import PageHero from '../components/ui/PageHero';
 
-const GalleryPage = ({ onSelectProject }: { onSelectProject: (p: Project) => void }) => {
+const GalleryPage = () => {
   const { settings } = useSettings();
 
   return (
@@ -51,7 +51,7 @@ const GalleryPage = ({ onSelectProject }: { onSelectProject: (p: Project) => voi
       </Section>
 
       {/* Main Gallery Grid */}
-      <Gallery onSelectProject={onSelectProject} />
+      <Gallery />
 
       {/* Cinematic Showcase */}
       <Showcase />

@@ -19,8 +19,8 @@ const Navbar = ({ onMenuOpen }: { onMenuOpen: () => void }) => {
           {settings.site_logo_text || 'v'}
         </Link>
 
-        {/* Desktop Navigation - Immediately Visible */}
-        <div className="hidden md:flex items-center gap-8">
+        {/* Desktop Navigation - Centered */}
+        <div className="hidden md:flex items-center gap-8 absolute left-1/2 -translate-x-1/2">
           {[
             { name: 'Beranda', path: '/' },
             { name: 'Tentang', path: '/about' },
@@ -40,9 +40,10 @@ const Navbar = ({ onMenuOpen }: { onMenuOpen: () => void }) => {
 
         <button 
           onClick={onMenuOpen}
-          className="flex items-center gap-2 text-sm uppercase tracking-widest text-white hover:opacity-70 transition-opacity md:hidden"
+          className="flex items-center gap-2 text-sm uppercase tracking-widest text-white hover:opacity-70 transition-opacity"
         >
-          menu <span className="text-xl font-light tracking-[-0.2em] ml-1">::</span>
+          <span className="md:hidden text-sm uppercase">menu</span>
+          <span className="text-xl font-light tracking-[-0.2em] ml-1">::</span>
         </button>
       </nav>
     </>

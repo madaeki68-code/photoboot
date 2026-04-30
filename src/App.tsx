@@ -20,7 +20,6 @@ import { Project } from './types';
 
 export default function App() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const { user, loading: authLoading, isAdmin } = useAuth();
   const { settings } = useSettings();
   const location = useLocation();
@@ -83,29 +82,22 @@ export default function App() {
       <WhatsAppWidget />
       
       <AnimatePresence mode="wait">
-        {selectedProject ? (
-          <ProjectDetail 
-            key="detail"
-            project={selectedProject} 
-            onBack={() => setSelectedProject(null)} 
-          />
-        ) : (
-          <motion.div
-            key={location.pathname}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="w-full"
-          >
-            <Routes location={location}>
-              <Route path="/" element={<Home onSelectProject={setSelectedProject} />} />
-              <Route path="/about" element={<AboutPage />} />
-              <Route path="/services" element={<ServicesPage />} />
-              <Route path="/gallery" element={<GalleryPage onSelectProject={setSelectedProject} />} />
-              <Route path="/contact" element={<ContactPage />} />
-            </Routes>
-          </motion.div>
-        )}
+        <motion.div
+          key={location.pathname}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="w-full"
+        >
+          <Routes location={location}>
+            <Route path="/" element={<Home />} />
+            <Route path="/about" element={<AboutPage />} />
+            <Route path="/services" element={<ServicesPage />} />
+            <Route path="/gallery" element={<GalleryPage />} />
+            <Route path="/contact" element={<ContactPage />} />
+            <Route path="/project/:id" element={<ProjectDetail />} />
+          </Routes>
+        </motion.div>
       </AnimatePresence>
     </div>
   );
