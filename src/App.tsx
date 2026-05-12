@@ -12,10 +12,8 @@ import MenuOverlay from './components/layout/MenuOverlay';
 import WhatsAppWidget from './components/ui/WhatsAppWidget';
 import ProjectDetail from './components/sections/ProjectDetail';
 import Home from './pages/Home';
-import AboutPage from './pages/AboutPage';
-import ServicesPage from './pages/ServicesPage';
 import GalleryPage from './pages/GalleryPage';
-import ContactPage from './pages/ContactPage';
+import WorksPage from './pages/WorksPage';
 import { Project } from './types';
 
 export default function App() {
@@ -91,10 +89,8 @@ export default function App() {
         >
           <Routes location={location}>
             <Route path="/" element={<Home />} />
-            <Route path="/about" element={<AboutPage />} />
-            <Route path="/services" element={<ServicesPage />} />
+            <Route path="/works" element={<WorksPage />} />
             <Route path="/gallery" element={<GalleryPage />} />
-            <Route path="/contact" element={<ContactPage />} />
             <Route path="/project/:id" element={<ProjectDetail />} />
           </Routes>
         </motion.div>

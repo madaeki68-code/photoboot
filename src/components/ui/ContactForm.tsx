@@ -41,24 +41,22 @@ export const ContactForm = () => {
 
   if (status === 'success') {
     return (
-      <div className="bg-[#1a1a1a] p-8 md:p-12 rounded-2xl flex flex-col items-center justify-center text-center h-full min-h-[400px]">
-        <div className="w-16 h-16 bg-white/10 rounded-full flex items-center justify-center mb-6">
-          <CheckCircle2 className="text-white w-8 h-8" />
+      <div className="bg-white border border-primary/5 p-12 flex flex-col items-center justify-center text-center h-full min-h-[400px]">
+        <div className="w-20 h-20 bg-bg-soft rounded-full flex items-center justify-center mb-8">
+          <CheckCircle2 className="text-accent w-10 h-10" />
         </div>
-        <h3 className="text-2xl md:text-3xl font-medium text-white mb-4 tracking-tight">Pesan Terkirim</h3>
-        <p className="text-gray-400">Terima kasih telah menghubungi saya. Saya akan segera membalas pesan Anda.</p>
+        <h3 className="text-3xl font-medium tracking-tighter italic text-primary mb-4">Message Received</h3>
+        <p className="text-primary/60 font-medium tracking-tighter italic">Thank you for reaching out. We will respond shortly.</p>
       </div>
     );
   }
 
   return (
-    <div className="bg-[#1a1a1a] p-8 md:p-12 rounded-2xl max-w-xl w-full">
-      <h3 className="text-2xl md:text-3xl font-medium text-white mb-8 tracking-tight">Kirim pesan</h3>
-      
-      <form onSubmit={handleSubmit} className="flex flex-col gap-6">
-        <div className="grid md:grid-cols-2 gap-6">
-          <div className="flex flex-col gap-2">
-            <label htmlFor="name" className="text-xs uppercase tracking-widest text-gray-400 font-medium">Nama</label>
+    <div className="bg-white border border-primary/5 p-8 md:p-12 w-full">
+      <form onSubmit={handleSubmit} className="flex flex-col gap-10">
+        <div className="grid md:grid-cols-2 gap-10">
+          <div className="flex flex-col gap-4">
+            <label htmlFor="name" className="text-[10px] uppercase tracking-[0.3em] text-accent font-bold">Your Name</label>
             <input 
               required
               type="text" 
@@ -66,13 +64,13 @@ export const ContactForm = () => {
               name="name"
               value={formData.name}
               onChange={handleChange}
-              className="bg-transparent border-b border-gray-700 py-3 text-white focus:outline-none focus:border-white transition-colors"
-              placeholder="John Doe"
+              className="bg-transparent border-b border-primary/10 py-4 text-primary focus:outline-none focus:border-accent transition-colors font-medium tracking-tighter italic text-lg"
+              placeholder="e.g. Julianne Moore"
             />
           </div>
           
-          <div className="flex flex-col gap-2">
-            <label htmlFor="email" className="text-xs uppercase tracking-widest text-gray-400 font-medium">Email</label>
+          <div className="flex flex-col gap-4">
+            <label htmlFor="email" className="text-[10px] uppercase tracking-[0.3em] text-accent font-bold">Email Address</label>
             <input 
               required
               type="email" 
@@ -80,30 +78,30 @@ export const ContactForm = () => {
               name="email"
               value={formData.email}
               onChange={handleChange}
-              className="bg-transparent border-b border-gray-700 py-3 text-white focus:outline-none focus:border-white transition-colors"
-              placeholder="john@example.com"
+              className="bg-transparent border-b border-primary/10 py-4 text-primary focus:outline-none focus:border-accent transition-colors font-medium tracking-tighter italic text-lg"
+              placeholder="e.g. julianne@archive.com"
             />
           </div>
         </div>
 
-        <div className="flex flex-col gap-2">
-          <label htmlFor="inquiry_type" className="text-xs uppercase tracking-widest text-gray-400 font-medium">Tipe Pertanyaan</label>
+        <div className="flex flex-col gap-4">
+          <label htmlFor="inquiry_type" className="text-[10px] uppercase tracking-[0.3em] text-accent font-bold">Subject of Inquiry</label>
           <select 
             id="inquiry_type"
             name="inquiry_type"
             value={formData.inquiry_type}
             onChange={handleChange}
-            className="bg-[#1a1a1a] border-b border-gray-700 py-3 text-white focus:outline-none focus:border-white transition-colors cursor-pointer appearance-none"
+            className="bg-transparent border-b border-primary/10 py-4 text-primary focus:outline-none focus:border-accent transition-colors cursor-pointer appearance-none font-medium tracking-tighter italic text-lg"
           >
-            <option value="Pertanyaan Umum">Pertanyaan Umum</option>
-            <option value="Komisi / Pemesanan">Komisi / Pemesanan</option>
-            <option value="Pembelian Cetak">Pembelian Cetak</option>
-            <option value="Kolaborasi">Kolaborasi</option>
+            <option value="Pertanyaan Umum">General Inquiry</option>
+            <option value="Komisi / Pemesanan">Booking / Commission</option>
+            <option value="Pembelian Cetak">Print Acquisition</option>
+            <option value="Kolaborasi">Collaboration</option>
           </select>
         </div>
 
-        <div className="flex flex-col gap-2">
-          <label htmlFor="message" className="text-xs uppercase tracking-widest text-gray-400 font-medium">Pesan</label>
+        <div className="flex flex-col gap-4">
+          <label htmlFor="message" className="text-[10px] uppercase tracking-[0.3em] text-accent font-bold">Your Vision</label>
           <textarea 
             required
             id="message"
@@ -111,23 +109,23 @@ export const ContactForm = () => {
             value={formData.message}
             onChange={handleChange}
             rows={4}
-            className="bg-transparent border-b border-gray-700 py-3 text-white focus:outline-none focus:border-white transition-colors resize-none"
-            placeholder="Ceritakan tentang proyek Anda..."
+            className="bg-transparent border-b border-primary/10 py-4 text-primary focus:outline-none focus:border-accent transition-colors resize-none font-medium tracking-tighter italic text-lg"
+            placeholder="Tell us about your story..."
           />
         </div>
 
         {status === 'error' && (
-          <p className="text-red-400 text-sm mt-2">{errorMessage}</p>
+          <p className="text-red-500 text-xs italic font-medium tracking-tighter">{errorMessage}</p>
         )}
 
         <div className="mt-8">
           <button 
             type="submit" 
             disabled={status === 'submitting'}
-            className="group w-full inline-flex items-center justify-between gap-4 bg-white text-[#1F2021] px-8 py-5 rounded-xl text-sm font-medium hover:bg-gray-200 transition-all disabled:opacity-70 disabled:cursor-not-allowed"
+            className="group w-full flex items-center justify-between border border-primary/10 px-8 py-6 text-[10px] uppercase tracking-[0.4em] font-bold hover:bg-primary hover:text-white transition-all duration-500 disabled:opacity-70 disabled:cursor-not-allowed"
           >
-            {status === 'submitting' ? 'Mengirim...' : 'Kirim Pesan'}
-            <div className={`w-8 h-8 rounded-full bg-[#1F2021]/10 flex items-center justify-center transition-transform ${status === 'submitting' ? 'animate-spin' : 'group-hover:translate-x-1'}`}>
+            <span>{status === 'submitting' ? 'Transmitting...' : 'Send Message'}</span>
+            <div className={`transition-transform duration-500 ${status === 'submitting' ? 'animate-spin' : 'group-hover:translate-x-2'}`}>
               {status === 'submitting' ? <Loader2 size={16} /> : <ArrowRight size={16} />}
             </div>
           </button>

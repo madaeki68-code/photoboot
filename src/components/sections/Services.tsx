@@ -1,64 +1,69 @@
 import React from 'react';
 import FadeIn from '../ui/FadeIn';
-import { ArrowRight } from 'lucide-react';
+import { Image as ImageIcon } from 'lucide-react';
 import { useSettings } from '../../hooks/useSettings';
 import { Section } from '../ui/Section';
 import Typography from '../ui/Typography';
 
 const Services = () => {
   const { settings } = useSettings();
-
   const services = settings.site_services || [];
 
   return (
-    <Section id="services" className="border-t border-gray-100">
-      <div className="flex flex-col md:flex-row justify-between items-start mb-12 md:mb-24 gap-4 md:gap-0">
-        <div className="text-sm flex items-center gap-2">
-          <span className="w-1.5 h-1.5 rounded-full bg-[#1F2021] block" />
-          <Typography variant="label">Layanan / ({(services.length).toString().padStart(2, '0')})</Typography>
-        </div>
-        <div className="flex items-center gap-4 text-[9px] md:text-xs uppercase tracking-widest text-gray-400 border border-gray-200 rounded-full px-4 md:px-6 py-1.5 md:py-2">
-          Foto diterbitkan di <span className="text-[#1F2021] font-bold">VOGUE</span>
-        </div>
+    <Section id="services" className="bg-white">
+      <div className="max-w-4xl mb-16 text-center mx-auto">
+        <Typography variant="label" className="mb-6 block text-accent">Bagian 03 — Keahlian</Typography>
+        <Typography variant="h2" className="mb-8 italic">
+          {settings.services_title || "Mengabadikan moment Pernikahan Kamu."}
+        </Typography>
       </div>
 
-      <div className="grid md:grid-cols-12 gap-12 md:gap-24">
-        <div className="md:col-span-5">
-          <FadeIn>
-            <Typography variant="label" className="mb-8 block text-gray-400">Momen yang saya tangkap</Typography>
-            <Typography variant="h2" className="mb-8 md:mb-12">
-              {settings.services_title || ''}
-            </Typography>
-            <Typography variant="p" className="mb-8 md:mb-12 max-w-md opacity-80 text-base md:text-lg">
-              {settings.services_subtitle || ''}
-            </Typography>
-            <a href="/services" className="inline-flex items-center gap-2 text-sm font-medium border-b border-[#1F2021] pb-1 hover:opacity-60 transition-opacity">
-              Jelajahi layanan saya <ArrowRight size={16} />
-            </a>
-          </FadeIn>
-        </div>
-
-        <div className="md:col-span-7">
-          <div className="flex flex-col">
-            {services.map((srv: any, idx: number) => (
-              <FadeIn key={srv.num || idx} delay={0.1 * idx} direction="up">
-                <div className="group flex flex-col md:flex-row md:items-center justify-between py-6 md:py-12 border-b border-gray-100 first:border-t">
-                  <div className="flex items-center gap-6 md:gap-8 mb-2 md:mb-0">
-                    <Typography variant="label" className="text-gray-400 font-mono text-[9px] md:text-[10px]">
-                      {srv.num || (idx + 1).toString().padStart(2, '0')}
-                    </Typography>
-                    <Typography variant="h3" className="group-hover:translate-x-2 transition-transform duration-500 text-lg md:text-2xl">
-                      {srv.title}
-                    </Typography>
+      {/* Mobile: horizontal scroll, Desktop: grid */}
+      <div className="flex md:grid md:grid-cols-3 gap-4 md:gap-8 overflow-x-auto md:overflow-visible pb-4 md:pb-0 -mx-4 px-4 md:mx-0 md:px-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden snap-x snap-mandatory md:snap-none">
+        {services.map((srv: any, idx: number) => (
+          <div
+            key={srv.num || idx}
+            className="group flex flex-col bg-gray-50 border border-gray-100 rounded-2xl overflow-hidden hover:border-gray-300 hover:shadow-md transition-all duration-500 shrink-0 w-[72vw] md:w-auto snap-start"
+          >
+              {/* Image */}
+              <div className="relative aspect-[4/3] overflow-hidden bg-gray-100">
+                {srv.image ? (
+                  <img
+                    src={srv.image}
+                    alt={srv.title}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <ImageIcon size={32} strokeWidth={1} className="text-gray-300" />
                   </div>
-                  <Typography variant="p" className="text-[13px] md:text-sm opacity-60 max-w-xs md:text-right">
-                    {srv.desc}
-                  </Typography>
+                )}
+                {/* Number badge */}
+                <div className="absolute top-4 left-4 w-8 h-8 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center">
+                  <span className="text-[10px] font-bold text-gray-500">
+                    {srv.num || (idx + 1).toString().padStart(2, '0')}
+                  </span>
                 </div>
-              </FadeIn>
-            ))}
-          </div>
-        </div>
+              </div>
+
+              {/* Content */}
+              <div className="p-4 md:p-6 flex flex-col flex-1">
+                <Typography variant="h3" className="text-base md:text-xl mb-2 leading-tight group-hover:italic transition-all duration-300">
+                  {srv.title}
+                </Typography>
+                <Typography variant="p" className="text-xs md:text-sm text-gray-400 leading-relaxed">
+                  {srv.desc}
+                </Typography>
+              </div>
+            </div>
+        ))}
+      </div>
+
+      <div className="mt-20 flex justify-center">
+        <a href="#contact" className="group flex flex-col items-center gap-4">
+          <Typography variant="label" className="group-hover:text-accent transition-colors">Mulai sebuah proyek</Typography>
+          <div className="w-px h-20 bg-gradient-to-b from-primary/20 to-transparent group-hover:from-accent transition-all" />
+        </a>
       </div>
     </Section>
   );

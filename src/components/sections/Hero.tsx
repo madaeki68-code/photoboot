@@ -33,58 +33,56 @@ const Hero = () => {
   };
 
   return (
-    <section id="hero" className="relative h-screen w-full overflow-hidden bg-black">
+    <section id="hero" className="relative h-screen w-full overflow-hidden bg-[#0A0A0A]">
       <AnimatePresence initial={false}>
         {images.length > 0 && (
-          <motion.img 
+          <motion.div 
             key={currentIndex}
-            style={{ y }}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 1 }}
-            transition={{ duration: 1.5, ease: "easeInOut" }}
-            src={images[currentIndex]} 
-            alt="Hero" 
-            className="absolute inset-0 w-full h-[120%] object-cover origin-top"
-          />
+            initial={{ opacity: 0, scale: 1.1 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 1.05 }}
+            transition={{ duration: 2, ease: [0.4, 0, 0.2, 1] }}
+            className="absolute inset-0"
+          >
+            <motion.img 
+              style={{ y }}
+              src={images[currentIndex]} 
+              alt="Hero" 
+              className="w-full h-[120%] object-cover origin-center"
+            />
+          </motion.div>
         )}
       </AnimatePresence>
-      <div className="absolute inset-0 bg-gradient-to-t from-white/40 via-transparent to-transparent" />
       
-      <motion.div 
-        style={{ opacity }}
-        className="absolute bottom-0 left-0 w-full p-6 md:p-12 flex flex-col md:flex-row justify-between items-end text-[#1F2021]"
-      >
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1, delay: 0.5 }}
-        >
-          {/* Teks Hero dihapus sesuai permintaan */}
-        </motion.div>
-        
-        <motion.div 
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 1, delay: 1 }}
-          className="flex flex-col items-end gap-4"
-        >
-          <div className="hidden md:flex gap-16 text-[10px] uppercase tracking-[0.2em] opacity-50 mb-8">
-            <div className="text-right">
-              <p className="mb-1">6720 × 4480</p>
-              <p>Dual Pixel Raw</p>
+      {/* Decorative Overlays */}
+      <div className="absolute inset-0 border-[30px] md:border-[60px] border-white/5 pointer-events-none" />
+
+      <div className="absolute inset-0 flex flex-col justify-between p-8 md:p-16">
+        <div className="flex justify-between items-start pt-16 md:pt-24">
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.8 }}
+            className="text-white/40 text-[10px] uppercase tracking-[0.5em] vertical-text hidden md:block"
+          >
+            EST. 2024 — ARSIP
+          </motion.div>
+        </div>
+
+        <div className="flex flex-col md:flex-row justify-between items-end gap-8">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 1, delay: 1.2 }}
+            className="flex items-center gap-6"
+          >
+            <div className="flex flex-col items-center gap-4 group cursor-pointer">
+              <Typography variant="label" className="text-white/40 group-hover:text-white transition-colors">Jelajahi</Typography>
+              <div className="w-px h-12 bg-gradient-to-b from-white/40 to-transparent" />
             </div>
-            <div className="text-right">
-              <p className="mb-1">36 x 24 mm</p>
-              <p>Canon EOS</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-4 animate-bounce">
-            <Typography variant="label" className="opacity-50">Scroll untuk menjelajah</Typography>
-            <div className="w-px h-12 bg-[#1F2021]/20" />
-          </div>
-        </motion.div>
-      </motion.div>
+          </motion.div>
+        </div>
+      </div>
     </section>
   );
 };

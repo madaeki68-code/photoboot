@@ -22,7 +22,7 @@ export function useAuth() {
     return () => subscription.unsubscribe();
   }, []);
 
-  const isAdmin = user?.email === 'revaekisa@gmail.com' || user?.email === 'venapicutres@gmail.com';
+  const isAdmin = user?.email === 'madaeki68@gmail.com';
 
   return { user, loading, isAdmin };
 }

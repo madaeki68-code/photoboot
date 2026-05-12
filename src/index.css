@@ -3,6 +3,9 @@
 
 @theme {
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --color-bg-soft: #f9f9f9;
+  --color-primary: #1F2021;
+  --color-accent: #888;
 }
 
 body {
@@ -10,4 +13,48 @@ body {
   background-color: #ffffff;
   color: #1F2021;
   -webkit-font-smoothing: antialiased;
+}
+
+/* Admin dashboard form fields */
+.dashboard-input {
+  width: 100%;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 0.875rem;
+  color: #1F2021;
+  background-color: #ffffff;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+.dashboard-input:focus {
+  border-color: #1F2021;
+  box-shadow: 0 0 0 2px rgba(31, 32, 33, 0.08);
+}
+
+.dashboard-input::placeholder {
+  color: #d1d5db;
+}
+
+.dashboard-textarea {
+  width: 100%;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  padding: 10px 12px;
+  font-size: 0.875rem;
+  color: #1F2021;
+  background-color: #ffffff;
+  outline: none;
+  resize: vertical;
+  transition: border-color 0.15s ease;
+}
+
+.dashboard-textarea:focus {
+  border-color: #1F2021;
+  box-shadow: 0 0 0 2px rgba(31, 32, 33, 0.08);
+}
+
+.dashboard-textarea::placeholder {
+  color: #d1d5db;
 }

@@ -35,10 +35,8 @@ const MenuOverlay = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => void
               <ul className="flex flex-wrap gap-x-6 md:gap-x-12 gap-y-4 md:gap-y-6">
                 {[
                   { name: 'Beranda', path: '/' },
-                  { name: 'Tentang', path: '/about' },
-                  { name: 'Layanan', path: '/services' },
-                  { name: 'Galeri', path: '/gallery' },
-                  { name: 'Kontak', path: '/contact' }
+                  { name: 'Karya', path: '/works' },
+                  { name: 'Galeri', path: '/gallery' }
                 ].map((item) => (
                   <li key={item.name}>
                     <Link 
@@ -67,7 +65,7 @@ const MenuOverlay = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => void
               {/* Branding / Quote */}
               <div>
                 <p className="text-xs uppercase tracking-widest text-gray-400 font-medium mb-6">
-                  {settings.site_title?.split('|')[0] || 'Vena Pictures'}
+                  {settings.site_title?.split('|')[0] || 'BRAND'}
                 </p>
                 <p className="text-xl text-gray-500 leading-relaxed italic">
                   "{settings.about_description || 'I shoot authentic, expressive photographs that capture the essence of every moment.'}"

@@ -4,21 +4,21 @@ import About from '../components/sections/About';
 import Services from '../components/sections/Services';
 import Gallery from '../components/sections/Gallery';
 import Testimonials from '../components/sections/Testimonials';
-import Showcase from '../components/sections/Showcase';
 import Footer from '../components/layout/Footer';
 import { Project } from '../types';
 
 const Home = () => {
   return (
-    <>
+    <div className="bg-white">
       <Hero />
-      <About />
-      <Gallery />
-      <Services />
-      <Testimonials />
-      <Showcase />
+      <div className="space-y-0">
+        <About />
+        <Services />
+        <Gallery />
+        <Testimonials />
+      </div>
       <Footer />
-    </>
+    </div>
   );
 };
 

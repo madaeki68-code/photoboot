@@ -41,7 +41,7 @@ const WhatsAppWidget = () => {
 
       // 3. Format WA message
       const waNumber = '6285693762240';
-      const text = `Halo Admin Vena,\n\nNama: ${formData.name}\nEmail: ${formData.email}\nLokasi: ${formData.location}\nTipe: ${formData.inquiry_type}\n\nPesan:\n${formData.message}`;
+      const text = `Halo Admin,\n\nNama: ${formData.name}\nEmail: ${formData.email}\nLokasi: ${formData.location}\nTipe: ${formData.inquiry_type}\n\nPesan:\n${formData.message}`;
       const encodedText = encodeURIComponent(text);
       const waUrl = `https://wa.me/${waNumber}?text=${encodedText}`;
 

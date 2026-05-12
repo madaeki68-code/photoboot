@@ -1,14 +1,14 @@
 import React from 'react';
-import Gallery from '../components/sections/Gallery';
+import Showcase from '../components/sections/Showcase';
 import Footer from '../components/layout/Footer';
 
-const GalleryPage = () => {
+const WorksPage = () => {
   return (
     <div className="bg-white">
-      <Gallery />
+      <Showcase />
       <Footer />
     </div>
   );
 };
 
-export default GalleryPage;
+export default WorksPage;

@@ -14,15 +14,15 @@ export const Container: React.FC<{ children: React.ReactNode; className?: string
   </div>
 );
 
-export const Section: React.FC<SectionProps> = ({ 
-  children, 
-  className = '', 
-  id, 
+export const Section: React.FC<SectionProps> = ({
+  children,
+  className = '',
+  id,
   dark = false,
-  noPadding = false 
+  noPadding = false
 }) => {
   return (
-    <section 
+    <section
       id={id}
       className={`
         ${noPadding ? '' : 'py-16 md:py-40'} 
