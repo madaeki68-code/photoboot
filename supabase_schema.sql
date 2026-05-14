@@ -150,8 +150,8 @@ create policy "Authenticated users can manage addons" on public.addons
 -- Policies for Bookings
 create policy "Anyone can insert bookings" on public.bookings
   for insert with check (true);
-create policy "Authenticated users can view bookings" on public.bookings
-  for select using (auth.role() = 'authenticated');
+create policy "Public can view bookings" on public.bookings
+  for select using (true);
 create policy "Authenticated users can update bookings" on public.bookings
   for update using (auth.role() = 'authenticated');
 create policy "Authenticated users can delete bookings" on public.bookings

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { Printer, ArrowLeft, CheckCircle2 } from 'lucide-react';
+import { Printer, ArrowLeft, CheckCircle2, Copy, Check } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useSettings } from '../hooks/useSettings';
 
@@ -20,6 +20,13 @@ export default function InvoicePage() {
   const [booking, setBooking] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const { settings } = useSettings();
+  const [copied, setCopied] = useState(false);
+
+  const handleCopyLink = () => {
+    navigator.clipboard.writeText(window.location.href);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   useEffect(() => {
     const fetchBooking = async () => {
@@ -93,7 +100,17 @@ export default function InvoicePage() {
           
           <div className="flex gap-3">
             <button 
+              onClick={handleCopyLink}
+              className="flex items-center gap-2 bg-white border border-gray-200 text-[#1F2021] px-6 py-3 rounded-full text-sm font-medium hover:bg-gray-50 transition-colors shadow-sm"
+            >
+              {copied ? <Check size={18} className="text-green-500" /> : <Copy size={18} />}
+              {copied ? 'Tersalin!' : 'Salin Link'}
+            </button>
+            <button 
               onClick={() => {
+                if (window.location.hostname === 'localhost') {
+                  alert('Perhatian: Anda sedang di localhost. Link yang dibagikan mungkin tidak bisa dibuka oleh klien. Pastikan aplikasi sudah di-deploy.');
+                }
                 const message = encodeURIComponent(
                   `Halo ${booking.name},\n\nBerikut adalah invoice resmi untuk pesanan Photobooth Anda dari KALLO PHOTOBOOTH.\n\nLink Invoice: ${window.location.href}\n\nTerima kasih!`
                 );
