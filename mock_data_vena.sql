@@ -69,3 +69,21 @@ INSERT INTO projects (title, location, tag, description, "order") VALUES
 ('The Minimalist Bride', 'Jakarta', 'Wedding', 'Eksplorasi kesederhanaan dan keanggunan dalam pernikahan modern di tengah kota.', 0),
 ('Java Heritage', 'Yogyakarta', 'Traditional', 'Mengabadikan kekayaan budaya Jawa dalam upacara siraman yang khidmat.', 1),
 ('Editorial Flow', 'Bandung', 'Editorial', 'Sesi foto mode dengan pencahayaan dramatis dan komposisi geometris.', 2);
+
+-- 4. Insert Packages (Mock Data)
+INSERT INTO packages (name, price, duration, description, features, popular) VALUES
+('Silver Package', 'Rp 1.500.000', '3 Jam', 'Cocok untuk acara kecil dan intim.', ARRAY['100 lembar cetak', 'Backdrop standar', '1 Operator'], false),
+('Gold Package', 'Rp 2.500.000', '5 Jam', 'Paket terpopuler untuk pernikahan dan event menengah.', ARRAY['Cetak sepuasnya', 'Backdrop custom', '2 Operator', 'Softcopy all files'], true),
+('Platinum Package', 'Rp 4.000.000', '8 Jam', 'Dokumentasi penuh untuk acara besar seharian.', ARRAY['Cetak sepuasnya', 'Premium backdrop', 'Lighting studio', '3 Operator', 'GIF/Boomerang'], false);
+
+-- 5. Insert Addons (Mock Data)
+INSERT INTO addons (name, price, description) VALUES
+('Custom Backdrop', 'Rp 500.000', 'Desain backdrop sesuai dengan tema acara Anda.'),
+('Tambahan Jam', 'Rp 300.000', 'Harga per jam tambahan di luar paket.'),
+('Album Fisik Premium', 'Rp 750.000', 'Cetak album foto fisik dengan kualitas premium.');
+
+-- 6. Insert Bookings (Mock Data)
+INSERT INTO bookings (name, whatsapp, location, event_category, event_date, package_name, promo_code, notes, payment_proof_url, status) VALUES
+('Andi & Ratna', '081234567890', 'Gedung Serbaguna Jakarta', 'Pernikahan', '2026-08-15', 'Gold Package', 'PROMO2026', 'Mohon datang 1 jam lebih awal untuk setup.', 'https://example.com/proof1.jpg', 'confirmed'),
+('Siti Aminah', '089876543210', 'Hotel Mulia Senayan', 'Ulang Tahun', '2026-06-20', 'Silver Package', NULL, 'Tema warna pastel.', NULL, 'pending'),
+('PT. Maju Kreatif', '085555555555', 'Kawasan SCBD', 'Corporate Event', '2026-07-10', 'Platinum Package', 'CORP10', 'Butuh invoice resmi perusahaan.', 'https://example.com/proof2.jpg', 'confirmed');

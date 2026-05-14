@@ -3,6 +3,7 @@ import Hero from '../components/sections/Hero';
 import About from '../components/sections/About';
 import Services from '../components/sections/Services';
 import Gallery from '../components/sections/Gallery';
+import Team from '../components/sections/Team';
 import Testimonials from '../components/sections/Testimonials';
 import Footer from '../components/layout/Footer';
 import { Project } from '../types';
@@ -15,6 +16,7 @@ const Home = () => {
         <About />
         <Services />
         <Gallery />
+        <Team />
         <Testimonials />
       </div>
       <Footer />

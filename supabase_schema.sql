@@ -88,3 +88,75 @@ create trigger handle_settings_updated_at
   before update on public.settings
   for each row
   execute procedure public.handle_updated_at();
+
+-- 4. Packages Table
+create table public.packages (
+  id uuid default gen_random_uuid() primary key,
+  name text not null,
+  price text not null,
+  duration text,
+  description text,
+  features text[] default '{}',
+  popular boolean default false,
+  category text,
+  cover_image text,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+ALTER TABLE public.bookings ADD COLUMN addons text[] default '{}';
+
+-- 5. Addons Table
+create table public.addons (
+  id uuid default gen_random_uuid() primary key,
+  name text not null,
+  price text not null,
+  description text,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+-- 6. Bookings Table
+create table public.bookings (
+  id uuid default gen_random_uuid() primary key,
+  name text not null,
+  whatsapp text not null,
+  location text not null,
+  event_category text not null,
+  event_date text not null,
+  package_name text,
+  promo_code text,
+  notes text,
+  payment_proof_url text,
+  status text default 'pending'::text, -- 'pending', 'confirmed', 'cancelled'
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+-- Set up Row Level Security (RLS)
+alter table public.packages enable row level security;
+alter table public.addons enable row level security;
+alter table public.bookings enable row level security;
+
+-- Policies for Packages
+create policy "Public packages are viewable by everyone" on public.packages
+  for select using (true);
+create policy "Authenticated users can manage packages" on public.packages
+  for all using (auth.role() = 'authenticated');
+
+-- Policies for Addons
+create policy "Public addons are viewable by everyone" on public.addons
+  for select using (true);
+create policy "Authenticated users can manage addons" on public.addons
+  for all using (auth.role() = 'authenticated');
+
+-- Policies for Bookings
+create policy "Anyone can insert bookings" on public.bookings
+  for insert with check (true);
+create policy "Authenticated users can view bookings" on public.bookings
+  for select using (auth.role() = 'authenticated');
+create policy "Authenticated users can update bookings" on public.bookings
+  for update using (auth.role() = 'authenticated');
+create policy "Authenticated users can delete bookings" on public.bookings
+  for delete using (auth.role() = 'authenticated');
+
+-- Add payment columns to bookings
+ALTER TABLE public.bookings ADD COLUMN total_price text default '0';
+ALTER TABLE public.bookings ADD COLUMN paid_amount text default '0';

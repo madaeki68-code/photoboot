@@ -14,6 +14,9 @@ import ProjectDetail from './components/sections/ProjectDetail';
 import Home from './pages/Home';
 import GalleryPage from './pages/GalleryPage';
 import WorksPage from './pages/WorksPage';
+import PackagesPage from './pages/PackagesPage';
+import BookingPage from './pages/BookingPage';
+import InvoicePage from './pages/InvoicePage';
 import { Project } from './types';
 
 export default function App() {
@@ -91,6 +94,9 @@ export default function App() {
             <Route path="/" element={<Home />} />
             <Route path="/works" element={<WorksPage />} />
             <Route path="/gallery" element={<GalleryPage />} />
+            <Route path="/packages" element={<PackagesPage />} />
+            <Route path="/booking" element={<BookingPage />} />
+            <Route path="/invoice/:id" element={<InvoicePage />} />
             <Route path="/project/:id" element={<ProjectDetail />} />
           </Routes>
         </motion.div>

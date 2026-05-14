@@ -14,9 +14,19 @@ const Navbar = ({ onMenuOpen }: { onMenuOpen: () => void }) => {
         className="fixed top-0 left-0 right-0 h-1 bg-[#1F2021] origin-left z-[60]"
         style={{ scaleX }}
       />
-      <nav className="fixed top-0 left-0 right-0 z-50 flex justify-between items-center px-8 md:px-12 py-10 text-white mix-blend-difference">
-        <Link to="/" className="text-2xl md:text-3xl font-serif font-medium tracking-tighter hover:opacity-70 transition-opacity">
-          {settings.site_logo_text || 'BRAND'}
+      <nav className="fixed top-0 left-0 right-0 z-50 flex justify-between items-center px-8 md:px-12 py-10 text-[#1F2021]">
+        <Link to="/" className="hover:opacity-70 transition-opacity">
+          {settings.site_logo ? (
+            <img 
+              src={settings.site_logo} 
+              alt={settings.site_logo_text || 'Brand'} 
+              className="h-10 md:h-12 w-auto object-contain" 
+            />
+          ) : (
+            <span className="text-2xl md:text-3xl font-serif font-medium tracking-tighter text-white">
+              {settings.site_logo_text || 'BRAND'}
+            </span>
+          )}
         </Link>
 
         {/* Desktop Navigation - Centered */}
@@ -24,7 +34,7 @@ const Navbar = ({ onMenuOpen }: { onMenuOpen: () => void }) => {
           {[
             { name: 'Beranda', path: '/' },
             { name: 'Karya', path: '/works' },
-            { name: 'Galeri', path: '/gallery' }
+            { name: 'Galeri', path: '/gallery' },
           ].map((item) => (
             <Link 
               key={item.name}
