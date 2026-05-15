@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { CalendarCheck, X, Edit2, Trash2, Save, ExternalLink, MessageCircle } from 'lucide-react';
+import { CalendarCheck, X, Edit2, Trash2, Save, ExternalLink, MessageCircle, CheckCircle2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../../../lib/supabase';
 
@@ -34,6 +34,7 @@ interface Booking {
 
 interface BookingsTabProps {
   bookings: Booking[];
+  onRefresh?: () => void;
 }
 
 const STATUS_STYLES: Record<string, string> = {
@@ -43,7 +44,7 @@ const STATUS_STYLES: Record<string, string> = {
   completed: 'bg-blue-50 text-blue-600',
 };
 
-const BookingsTab: React.FC<BookingsTabProps> = ({ bookings }) => {
+const BookingsTab: React.FC<BookingsTabProps> = ({ bookings, onRefresh }) => {
   const [editingBooking, setEditingBooking] = useState<Booking | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -98,6 +99,9 @@ const BookingsTab: React.FC<BookingsTabProps> = ({ bookings }) => {
     if (!editingBooking) return;
     setIsSaving(true);
     try {
+      const numericTotalPrice = editingBooking.total_price ? Number(editingBooking.total_price.replace(/\D/g, '')) : 0;
+      const numericPaidAmount = editingBooking.paid_amount ? Number(editingBooking.paid_amount.replace(/\D/g, '')) : 0;
+
       const { error } = await supabase.from('bookings').update({
         status: editingBooking.status,
         name: editingBooking.name,
@@ -108,10 +112,13 @@ const BookingsTab: React.FC<BookingsTabProps> = ({ bookings }) => {
         notes: editingBooking.notes,
         total_price: editingBooking.total_price || null,
         paid_amount: editingBooking.paid_amount || null,
+        total_price_numeric: numericTotalPrice,
+        paid_amount_numeric: numericPaidAmount,
       }).eq('id', editingBooking.id);
       
       if (error) throw error;
       closeModal();
+      onRefresh?.();
     } catch (err) {
       console.error('Error saving booking:', err);
       alert('Gagal menyimpan perubahan.');
@@ -120,7 +127,7 @@ const BookingsTab: React.FC<BookingsTabProps> = ({ bookings }) => {
     }
   };
 
-  const generateWaLink = (bk: Booking, templateType: 'konfirmasi' | 'followup') => {
+  const generateWaLink = (bk: Booking, templateType: 'konfirmasi' | 'followup' | 'pelunasan') => {
     if (!bk.whatsapp) return '#';
     let phone = bk.whatsapp.replace(/\D/g, '');
     if (phone.startsWith('0')) phone = '62' + phone.slice(1);
@@ -128,6 +135,11 @@ const BookingsTab: React.FC<BookingsTabProps> = ({ bookings }) => {
     let message = '';
     if (templateType === 'konfirmasi') {
       message = `Halo Kak ${bk.name}, kami dari Photobooth.\n\nKami telah menerima pembayaran untuk booking paket *${bk.package_name}* pada tanggal *${bk.event_date}*.\n\nStatus booking kakak saat ini telah kami *Konfirmasi*. Tim kami akan segera berkoordinasi lebih lanjut menjelang hari H. Terima kasih!`;
+    } else if (templateType === 'pelunasan') {
+      const total = Number((bk.total_price || '').replace(/\D/g, ''));
+      const paid = Number((bk.paid_amount || '').replace(/\D/g, ''));
+      const sisa = total - paid;
+      message = `Halo Kak ${bk.name} 👋\n\nTerima kasih atas pelunasan pembayaran untuk paket *${bk.package_name}* pada tanggal *${bk.event_date}*.\n\nPembayaran Anda sebesar *${formatRupiah(bk.total_price || '0')}* telah kami terima dan booking Anda sudah berstatus *LUNAS* ✅\n\nKami akan segera berkoordinasi menjelang hari H. Sampai jumpa! 🎉`;
     } else {
       message = `Halo Kak ${bk.name}, kami dari Photobooth.\n\nKami melihat ada booking untuk paket *${bk.package_name}* pada tanggal *${bk.event_date}*. Apakah kakak memiliki kendala terkait pembayaran? Jika ada pertanyaan, silakan hubungi kami ya.`;
     }
@@ -549,6 +561,37 @@ const BookingsTab: React.FC<BookingsTabProps> = ({ bookings }) => {
                     >
                       <MessageCircle size={16} /> WA Konfirmasi
                     </a>
+                    {/* WA Pelunasan — tampil jika ada sisa tagihan */}
+                    {(() => {
+                      const total = Number((editingBooking.total_price || '').replace(/\D/g, ''));
+                      const paid = Number((editingBooking.paid_amount || '').replace(/\D/g, ''));
+                      const sisa = total - paid;
+                      if (sisa > 0 && paid > 0) {
+                        return (
+                          <a
+                            href={generateWaLink(editingBooking, 'pelunasan')}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="w-full flex items-center justify-center gap-2 bg-orange-50 border border-orange-200 text-orange-700 px-4 py-3 rounded-xl text-sm font-bold tracking-widest uppercase hover:bg-orange-100 transition-all shadow-sm"
+                          >
+                            <MessageCircle size={16} /> WA Tagih Sisa
+                          </a>
+                        );
+                      }
+                      if (sisa <= 0 && total > 0) {
+                        return (
+                          <a
+                            href={generateWaLink(editingBooking, 'pelunasan')}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="w-full flex items-center justify-center gap-2 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-xl text-sm font-bold tracking-widest uppercase hover:bg-green-100 transition-all shadow-sm"
+                          >
+                            <CheckCircle2 size={16} /> WA Konfirmasi Lunas
+                          </a>
+                        );
+                      }
+                      return null;
+                    })()}
                     <a
                       href={generateWaLink(editingBooking, 'followup')}
                       target="_blank"

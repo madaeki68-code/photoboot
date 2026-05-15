@@ -9,14 +9,21 @@ import {
   Package,
   CalendarCheck,
   Menu,
+  BarChart3,
+  Wallet,
+  Receipt,
+  History,
 } from 'lucide-react';
 import { Project } from '../../types';
 
 // Tab components
+import OverviewTab from './tabs/OverviewTab';
 import ProjectsTab from './tabs/ProjectsTab';
 import MessagesTab from './tabs/MessagesTab';
 import BookingsTab from './tabs/BookingsTab';
 import PackagesTab from './tabs/PackagesTab';
+import FinanceTab from './tabs/FinanceTab';
+import TimelineTab from './tabs/TimelineTab';
 import SettingsTab from './tabs/SettingsTab';
 
 interface Message {
@@ -45,16 +52,19 @@ interface Booking {
 }
 
 const TABS = [
+  { key: 'overview', label: 'Overview', icon: BarChart3 },
+  { key: 'timeline', label: 'Timeline', icon: History },
+  { key: 'bookings', label: 'Booking', icon: CalendarCheck },
+  { key: 'finance', label: 'Keuangan', icon: Wallet },
   { key: 'projects', label: 'Proyek', icon: LayoutGrid },
+  { key: 'packages', label: 'Paket & Addons', icon: Package },
   { key: 'messages', label: 'Pesan', icon: MessageSquare },
   { key: 'settings', label: 'Pengaturan', icon: SettingsIcon },
-  { key: 'packages', label: 'Paket & Addons', icon: Package },
-  { key: 'bookings', label: 'Booking', icon: CalendarCheck },
 ] as const;
 
 export const Dashboard = () => {
   const [searchParams, setSearchParams] = useSearchParams();
-  const activeTab = searchParams.get('tab') || 'projects';
+  const activeTab = searchParams.get('tab') || 'overview';
   const setActiveTab = (tab: string) => setSearchParams({ tab });
 
   const [projects, setProjects] = useState<Project[]>([]);
@@ -212,20 +222,38 @@ export const Dashboard = () => {
 
         <div className="flex-1 p-4 md:p-8 lg:p-12 max-w-7xl mx-auto w-full">
           {/* Header */}
-          <div className="mb-10">
-            <div className="flex items-center gap-2 text-[10px] uppercase tracking-[0.2em] text-gray-400 mb-2">
-              <span>Admin</span>
-              <span>/</span>
-              <span className="text-gray-900 font-semibold">{activeTabLabel}</span>
+          <div className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
+            <div>
+              <div className="flex items-center gap-2 text-[10px] uppercase tracking-[0.2em] text-gray-400 mb-2">
+                <span>Admin</span>
+                <span>/</span>
+                <span className="text-gray-900 font-semibold">{activeTabLabel}</span>
+              </div>
+              <h1 className="text-4xl font-medium tracking-tight text-[#1F2021]">{activeTabLabel}</h1>
+              <p className="text-gray-500 mt-2">Selamat datang kembali, berikut ringkasan bisnis Anda hari ini.</p>
             </div>
-            <h1 className="text-4xl font-medium tracking-tight text-[#1F2021]">{activeTabLabel}</h1>
+            
+            <div className="flex items-center gap-3 bg-white px-6 py-3 rounded-2xl border border-gray-100 shadow-sm">
+              <div className="text-right">
+                <p className="text-[10px] uppercase tracking-widest text-gray-400 font-bold">Hari Ini</p>
+                <p className="text-sm font-bold text-[#1F2021]">
+                  {new Date().toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long' })}
+                </p>
+              </div>
+              <div className="w-10 h-10 bg-gray-50 rounded-xl flex items-center justify-center text-[#1F2021]">
+                <CalendarCheck size={20} />
+              </div>
+            </div>
           </div>
 
           {/* Tab Content with Animation */}
           <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+            {activeTab === 'overview' && <OverviewTab bookings={bookings} messages={messages} />}
             {activeTab === 'projects' && <ProjectsTab projects={projects} />}
             {activeTab === 'messages' && <MessagesTab messages={messages} />}
-            {activeTab === 'bookings' && <BookingsTab bookings={bookings} />}
+            {activeTab === 'bookings' && <BookingsTab bookings={bookings} onRefresh={fetchBookings} />}
+            {activeTab === 'finance' && <FinanceTab bookings={bookings} onRefresh={fetchBookings} />}
+            {activeTab === 'timeline' && <TimelineTab bookings={bookings} messages={messages} />}
             {activeTab === 'packages' && <PackagesTab />}
             {activeTab === 'settings' && <SettingsTab />}
           </div>

@@ -1,359 +1,368 @@
-import React, { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { Printer, ArrowLeft, CheckCircle2, Copy, Check, Download } from 'lucide-react';
+import React, { useEffect, useState, useRef } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
-import { useSettings } from '../hooks/useSettings';
-import { toPng } from 'html-to-image';
-import { jsPDF } from 'jspdf';
+import { Download, ArrowLeft, Printer, CheckCircle2, Clock, Wallet } from 'lucide-react';
+import html2pdf from 'html2pdf.js';
 
-const formatRupiah = (val: string) => {
-  if (!val) return 'Rp 0';
-  const numeric = val.replace(/\D/g, '');
-  if (!numeric) return 'Rp 0';
+interface Booking {
+  id: string;
+  name: string;
+  whatsapp: string;
+  location: string;
+  event_category: string;
+  event_date: string;
+  package_name: string;
+  promo_code?: string;
+  notes?: string;
+  total_price?: string;
+  paid_amount?: string;
+  total_price_numeric?: number;
+  paid_amount_numeric?: number;
+  addons?: string[];
+  status: string;
+  created_at: string;
+}
+
+interface Settings {
+  company_name?: string;
+  company_address?: string;
+  company_phone?: string;
+  company_email?: string;
+  company_logo?: string;
+  bank_name?: string;
+  bank_account_number?: string;
+  bank_account_name?: string;
+}
+
+const formatRupiah = (val: number) => {
   return new Intl.NumberFormat('id-ID', {
     style: 'currency',
     currency: 'IDR',
     minimumFractionDigits: 0
-  }).format(Number(numeric));
+  }).format(val);
 };
 
-export default function InvoicePage() {
+const parseCurrency = (val?: string | number) => {
+  if (typeof val === 'number') return val;
+  if (!val) return 0;
+  return Number(val.replace(/\D/g, '')) || 0;
+};
+
+const InvoicePage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const [booking, setBooking] = useState<any>(null);
+  const navigate = useNavigate();
+  const invoiceRef = useRef<HTMLDivElement>(null);
+  
+  const [booking, setBooking] = useState<Booking | null>(null);
+  const [settings, setSettings] = useState<Settings>({});
   const [loading, setLoading] = useState(true);
-  const { settings } = useSettings();
-  const [copied, setCopied] = useState(false);
-  const invoiceRef = React.useRef<HTMLDivElement>(null);
-
-  const handleDownloadPDF = async () => {
-    if (!invoiceRef.current) {
-      console.error('Invoice element not found');
-      return;
-    }
-
-    try {
-      console.log('Generating PDF using html-to-image & jsPDF...');
-      const element = invoiceRef.current;
-      
-      // Convert HTML to PNG image
-      const dataUrl = await toPng(element, { 
-        quality: 1.0,
-        pixelRatio: 2, // High resolution
-        skipFonts: false,
-        style: {
-          transform: 'scale(1)',
-          transformOrigin: 'top left'
-        }
-      });
-
-      // Create PDF
-      const pdf = new jsPDF({
-        orientation: 'portrait',
-        unit: 'mm',
-        format: 'a4'
-      });
-
-      // Calculate dimensions to fit A4 (210 x 297 mm)
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = (element.offsetHeight * pdfWidth) / element.offsetWidth;
-
-      pdf.addImage(dataUrl, 'PNG', 0, 0, pdfWidth, pdfHeight);
-      
-      const fileName = `Invoice-${booking?.id?.split('-')[0].toUpperCase() || 'Booking'}.pdf`;
-      pdf.save(fileName);
-      
-      console.log('PDF generated and download triggered');
-    } catch (error) {
-      console.error('PDF Generation Error:', error);
-      alert('Gagal mengunduh PDF. Silakan coba Cetak (Ctrl+P) sebagai alternatif.');
-    }
-  };
-
-  const handleCopyLink = () => {
-    navigator.clipboard.writeText(window.location.href);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
+  const [downloading, setDownloading] = useState(false);
 
   useEffect(() => {
-    const fetchBooking = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('bookings')
-          .select('*')
-          .eq('id', id)
-          .single();
-        if (error) throw error;
-        setBooking(data);
-      } catch (err) {
-        console.error('Error fetching booking:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    if (id) fetchBooking();
+    fetchData();
   }, [id]);
+
+  const fetchData = async () => {
+    try {
+      // Fetch booking
+      const { data: bookingData, error: bookingError } = await supabase
+        .from('bookings')
+        .select('*')
+        .eq('id', id)
+        .single();
+
+      if (bookingError) throw bookingError;
+      setBooking(bookingData);
+
+      // Fetch settings
+      const { data: settingsData } = await supabase
+        .from('settings')
+        .select('*');
+
+      const settingsObj: Settings = {};
+      settingsData?.forEach((item: any) => {
+        settingsObj[item.key as keyof Settings] = item.value;
+      });
+      setSettings(settingsObj);
+    } catch (error) {
+      console.error('Error fetching invoice data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDownloadPDF = async () => {
+    if (!invoiceRef.current) return;
+    setDownloading(true);
+
+    const opt = {
+      margin: 10,
+      filename: `Invoice-${booking?.name}-${new Date().getTime()}.pdf`,
+      image: { type: 'jpeg' as const, quality: 0.98 },
+      html2canvas: { scale: 2, useCORS: true },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' as const }
+    };
+
+    try {
+      await html2pdf().set(opt).from(invoiceRef.current).save();
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      alert('Gagal membuat PDF. Silakan coba lagi.');
+    } finally {
+      setDownloading(false);
+    }
+  };
+
+  const handlePrint = () => {
+    window.print();
+  };
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="w-10 h-10 border-4 border-gray-200 border-t-[#1F2021] rounded-full animate-spin" />
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#1F2021] mx-auto mb-4"></div>
+          <p className="text-gray-500">Memuat invoice...</p>
+        </div>
       </div>
     );
   }
 
   if (!booking) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 flex-col gap-4">
-        <h1 className="text-2xl font-bold">Invoice Tidak Ditemukan</h1>
-        <Link to="/" className="text-blue-500 hover:underline">Kembali ke Beranda</Link>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-xl text-gray-600 mb-4">Invoice tidak ditemukan</p>
+          <button
+            onClick={() => navigate('/admin?tab=finance')}
+            className="text-[#1F2021] hover:underline"
+          >
+            Kembali ke Dashboard
+          </button>
+        </div>
       </div>
     );
   }
 
-  const invoiceNumber = `INV-${booking.id.split('-')[0].toUpperCase()}`;
-  const total = Number((booking.total_price || '').replace(/\D/g, '')) || 0;
-  const paid = Number((booking.paid_amount || '').replace(/\D/g, '')) || 0;
-  const sisa = total - paid;
-  const isPaidOff = total > 0 && sisa <= 0;
+  const total = parseCurrency(booking.total_price_numeric ?? booking.total_price);
+  const paid = parseCurrency(booking.paid_amount_numeric ?? booking.paid_amount);
+  const remaining = total - paid;
+  const paymentStatus = remaining <= 0 ? 'paid' : paid > 0 ? 'partial' : 'unpaid';
 
   return (
-    <div className="min-h-screen bg-gray-100 pt-28 pb-20 px-3 sm:px-4 md:px-6 print:bg-white print:p-0">
-      <style dangerouslySetInnerHTML={{ __html: `
-        @media print {
-          @page { size: A4; margin: 0; }
-          body { background: white; }
-          .invoice-paper {
-            width: 210mm;
-            min-height: 297mm;
-            padding: 20mm !important;
-            margin: 0 !important;
-            box-shadow: none !important;
-            border: none !important;
-            border-radius: 0 !important;
-          }
-          .no-print { display: none !important; }
-        }
-        
-        /* Fix for html2canvas oklab/oklch issue in Tailwind v4 */
-        .invoice-paper * {
-          color-scheme: light !important;
-          -webkit-print-color-adjust: exact;
-        }
-      `}} />
-
-      <div className="max-w-[210mm] mx-auto">
-        {/* ─── Action Bar ─── */}
-        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6 gap-3 no-print">
+    <div className="min-h-screen bg-gray-50 py-8 print:py-0">
+      {/* Action Bar - Hidden on Print */}
+      <div className="max-w-4xl mx-auto px-4 mb-6 print:hidden">
+        <div className="flex items-center justify-between bg-white p-4 rounded-xl shadow-sm border border-gray-100">
           <button
-            onClick={() => window.history.back()}
-            className="flex items-center gap-2 text-gray-500 hover:text-[#1F2021] transition-colors self-start"
+            onClick={() => navigate('/admin?tab=finance')}
+            className="flex items-center gap-2 text-gray-600 hover:text-[#1F2021] transition-colors"
           >
-            <ArrowLeft size={20} /> Kembali
+            <ArrowLeft size={20} />
+            <span className="font-medium">Kembali</span>
           </button>
-
-          <div className="flex flex-wrap gap-2">
+          
+          <div className="flex gap-3">
             <button
-              onClick={handleCopyLink}
-              className="flex items-center gap-2 bg-white border border-[#e5e7eb] text-[#1F2021] px-4 py-2.5 rounded-full text-sm font-medium hover:bg-[#f9fafb] transition-colors shadow-sm"
+              onClick={handlePrint}
+              className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
             >
-              {copied ? <Check size={16} className="text-green-500" /> : <Copy size={16} />}
-              {copied ? 'Tersalin!' : 'Salin Link'}
-            </button>
-            <button
-              onClick={() => {
-                if (window.location.hostname === 'localhost') {
-                  alert('Perhatian: Anda sedang di localhost. Link yang dibagikan mungkin tidak bisa dibuka oleh klien. Pastikan aplikasi sudah di-deploy.');
-                }
-                const message = encodeURIComponent(
-                  `Halo ${booking.name},\n\nBerikut adalah invoice resmi untuk pesanan Photobooth Anda dari KALLO PHOTOBOOTH.\n\nLink Invoice: ${window.location.href}\n\nTerima kasih!`
-                );
-                const phone = booking.whatsapp.replace(/\D/g, '');
-                const waPhone = phone.startsWith('0') ? '62' + phone.slice(1) : phone;
-                window.open(`https://wa.me/${waPhone}?text=${message}`, '_blank');
-              }}
-              className="flex items-center gap-2 bg-[#16a34a] text-white px-4 py-2.5 rounded-full text-sm font-medium hover:bg-green-700 transition-colors shadow-lg"
-            >
-              <CheckCircle2 size={16} /> Bagikan ke WA
+              <Printer size={18} />
+              Print
             </button>
             <button
               onClick={handleDownloadPDF}
-              className="flex items-center gap-2 bg-[#1F2021] text-white px-4 py-2.5 rounded-full text-sm font-medium hover:bg-gray-800 transition-colors shadow-lg"
+              disabled={downloading}
+              className="flex items-center gap-2 px-6 py-2 bg-[#1F2021] text-white rounded-lg hover:opacity-90 transition-all disabled:opacity-50"
             >
-              <Download size={16} /> Download Invoice PDF
+              <Download size={18} />
+              {downloading ? 'Membuat PDF...' : 'Download PDF'}
             </button>
           </div>
         </div>
+      </div>
 
-        {/* ─── Invoice Paper ─── */}
-        <div ref={invoiceRef} className="invoice-paper bg-white p-6 sm:p-10 md:p-16 shadow-2xl shadow-gray-300/50 relative overflow-hidden flex flex-col rounded-2xl">
-
+      {/* Invoice Content */}
+      <div className="max-w-4xl mx-auto px-4">
+        <div ref={invoiceRef} className="bg-white shadow-lg rounded-2xl overflow-hidden print:shadow-none print:rounded-none">
           {/* Header */}
-          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4 border-b-2 border-[#111827] pb-8 mb-8">
-            {/* Logo + Nama */}
-            <div className="flex items-center gap-3">
-              {settings.site_logo ? (
-                <img
-                  src={settings.site_logo}
-                  alt="Logo"
-                  className="h-12 w-auto object-contain"
-                />
-              ) : (
-                <div className="w-12 h-12 bg-[#1F2021] rounded-xl flex items-center justify-center text-white font-black text-xl shrink-0">
-                  {settings.site_logo_text?.[0] || settings.site_title?.[0] || 'P'}
-                </div>
-              )}
+          <div className="bg-[#1F2021] text-white p-8 print:p-6">
+            <div className="flex justify-between items-start">
               <div>
-                <h1 className="text-lg sm:text-2xl font-black tracking-tighter text-[#1F2021] leading-none uppercase">
-                  {settings.site_logo_text || settings.site_title || 'PHOTOBOOTH'}
-                </h1>
-                <p className="text-[9px] text-[#9ca3af] font-bold uppercase tracking-widest mt-1">Professional Photobooth Service</p>
-                <p className="text-[9px] text-[#6b7280] mt-0.5 max-w-[180px] leading-relaxed">
-                  {settings.contact_address || 'Jakarta, Indonesia'}
-                </p>
+                <h1 className="text-3xl font-bold mb-2">INVOICE</h1>
+                <p className="text-sm opacity-80">No: INV-{booking.id.slice(0, 8).toUpperCase()}</p>
+                <p className="text-sm opacity-80">Tanggal: {new Date(booking.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
               </div>
-            </div>
-            {/* Invoice label */}
-            <div className="text-left sm:text-right">
-              <h2 className="text-3xl sm:text-4xl font-black text-[#f3f4f6] leading-none mb-3">INVOICE</h2>
-              <p className="text-sm font-bold text-[#1F2021]">{invoiceNumber}</p>
-              <p className="text-[10px] text-[#9ca3af] font-bold uppercase">
-                {new Date(booking.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
-              </p>
+              {settings.company_logo && (
+                <img src={settings.company_logo} alt="Logo" className="h-16 object-contain" />
+              )}
             </div>
           </div>
 
-          {/* Billed to + Detail Acara */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-12 mb-10">
+          {/* Company & Client Info */}
+          <div className="grid md:grid-cols-2 gap-8 p-8 border-b border-gray-100">
             <div>
-              <h3 className="text-[10px] uppercase tracking-[0.2em] text-[#9ca3af] font-bold mb-3 border-b pb-1">DITAGIHKAN KEPADA</h3>
-              <div className="space-y-0.5">
-                <p className="text-base sm:text-lg font-black text-[#1F2021] uppercase">{booking.name}</p>
-                <p className="text-sm text-[#4b5563]">{booking.whatsapp}</p>
-              </div>
+              <h3 className="text-xs uppercase tracking-widest text-gray-400 font-bold mb-3">Dari:</h3>
+              <h4 className="font-bold text-lg text-[#1F2021] mb-2">
+                {settings.company_name || 'Nama Perusahaan'}
+              </h4>
+              <p className="text-sm text-gray-600 leading-relaxed">
+                {settings.company_address || 'Alamat Perusahaan'}
+              </p>
+              <p className="text-sm text-gray-600 mt-2">
+                {settings.company_phone && `Tel: ${settings.company_phone}`}
+              </p>
+              <p className="text-sm text-gray-600">
+                {settings.company_email && `Email: ${settings.company_email}`}
+              </p>
             </div>
+
             <div>
-              <h3 className="text-[10px] uppercase tracking-[0.2em] text-[#9ca3af] font-bold mb-3 border-b pb-1">DETAIL ACARA</h3>
-              <table className="w-full text-sm">
-                <tbody>
-                  <tr>
-                    <td className="text-[#9ca3af] py-1 font-medium w-20 align-top">Kategori</td>
-                    <td className="text-[#1F2021] py-1 font-bold">: {booking.event_category}</td>
-                  </tr>
-                  <tr>
-                    <td className="text-[#9ca3af] py-1 font-medium align-top">Tanggal</td>
-                    <td className="text-[#1F2021] py-1 font-bold">: {booking.event_date}</td>
-                  </tr>
-                  <tr>
-                    <td className="text-[#9ca3af] py-1 font-medium align-top">Lokasi</td>
-                    <td className="text-[#1F2021] py-1 font-bold break-words">: {booking.location}</td>
-                  </tr>
-                </tbody>
-              </table>
+              <h3 className="text-xs uppercase tracking-widest text-gray-400 font-bold mb-3">Kepada:</h3>
+              <h4 className="font-bold text-lg text-[#1F2021] mb-2">{booking.name}</h4>
+              <p className="text-sm text-gray-600">WhatsApp: {booking.whatsapp}</p>
+              <p className="text-sm text-gray-600">Lokasi: {booking.location}</p>
+              <p className="text-sm text-gray-600">Kategori: {booking.event_category}</p>
+              <p className="text-sm text-gray-600">Tanggal Event: {booking.event_date}</p>
             </div>
           </div>
 
           {/* Items Table */}
-          <div className="flex-1 mb-10">
-            <table className="w-full border-collapse">
+          <div className="p-8">
+            <table className="w-full">
               <thead>
-                <tr className="bg-[#f3f4f6]">
-                  <th className="p-3 sm:p-4 text-[10px] font-bold text-[#4b5563] uppercase tracking-widest text-left">Layanan / Item</th>
-                  <th className="p-3 sm:p-4 text-[10px] font-bold text-[#4b5563] uppercase tracking-widest text-right w-24 sm:w-40">Subtotal</th>
+                <tr className="border-b-2 border-gray-200">
+                  <th className="text-left py-3 text-xs uppercase tracking-widest text-gray-400 font-bold">Deskripsi</th>
+                  <th className="text-right py-3 text-xs uppercase tracking-widest text-gray-400 font-bold">Jumlah</th>
                 </tr>
               </thead>
-              <tbody className="divide-y-2 divide-[#f9fafb]">
-                <tr>
-                  <td className="p-4 sm:p-6">
-                    <p className="font-black text-sm text-[#1F2021] uppercase">{booking.package_name || 'Paket Utama'}</p>
-                    <p className="text-[10px] text-[#9ca3af] mt-1 uppercase font-bold tracking-tighter">Layanan Photobooth Profesional</p>
+              <tbody>
+                <tr className="border-b border-gray-100">
+                  <td className="py-4">
+                    <div className="font-bold text-[#1F2021]">{booking.package_name || 'Paket Photobooth'}</div>
+                    {booking.notes && (
+                      <div className="text-sm text-gray-500 mt-1">{booking.notes}</div>
+                    )}
                   </td>
-                  <td className="p-4 sm:p-6 text-right font-bold text-sm text-[#1F2021]">-</td>
+                  <td className="text-right font-bold text-[#1F2021]">{formatRupiah(total)}</td>
                 </tr>
-                {booking.addons && booking.addons.length > 0 && booking.addons.map((addon: string, i: number) => (
-                  <tr key={i}>
-                    <td className="p-4 sm:p-6">
-                      <p className="font-bold text-sm text-[#1F2021]">+ {addon}</p>
-                      <p className="text-[10px] text-[#9ca3af] mt-1 uppercase font-bold tracking-tighter">Layanan Tambahan (Addon)</p>
-                    </td>
-                    <td className="p-4 sm:p-6 text-right font-bold text-sm text-[#1F2021]">-</td>
+
+                {booking.addons && booking.addons.length > 0 && (
+                  <>
+                    {booking.addons.map((addon, idx) => (
+                      <tr key={idx} className="border-b border-gray-100">
+                        <td className="py-3 text-sm text-gray-600">+ {addon}</td>
+                        <td className="text-right text-sm text-gray-600">-</td>
+                      </tr>
+                    ))}
+                  </>
+                )}
+
+                {booking.promo_code && (
+                  <tr className="border-b border-gray-100">
+                    <td className="py-3 text-sm text-green-600">Kode Promo: {booking.promo_code}</td>
+                    <td className="text-right text-sm text-green-600">Terapkan</td>
                   </tr>
-                ))}
+                )}
               </tbody>
             </table>
 
-            {booking.notes && (
-              <div className="mt-6 p-4 sm:p-6 bg-[#f9fafb] rounded-xl border-l-4 border-[#111827]">
-                <p className="text-[10px] font-bold text-[#9ca3af] uppercase tracking-widest mb-2">Catatan Khusus</p>
-                <p className="text-xs text-[#4b5563] italic leading-relaxed">"{booking.notes}"</p>
+            {/* Summary */}
+            <div className="mt-8 ml-auto max-w-xs space-y-3">
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-600">Subtotal:</span>
+                <span className="font-bold">{formatRupiah(total)}</span>
+              </div>
+              <div className="flex justify-between text-sm border-t pt-3">
+                <span className="text-gray-600">Sudah Dibayar (DP):</span>
+                <span className="font-bold text-green-600">{formatRupiah(paid)}</span>
+              </div>
+              <div className="flex justify-between text-lg font-bold border-t-2 border-gray-200 pt-3">
+                <span>Sisa Tagihan:</span>
+                <span className={remaining > 0 ? 'text-red-600' : 'text-green-600'}>
+                  {remaining > 0 ? formatRupiah(remaining) : 'LUNAS ✓'}
+                </span>
+              </div>
+            </div>
+
+            {/* Payment Status Badge */}
+            <div className="mt-8 flex items-center justify-center gap-3 p-4 rounded-xl bg-gray-50">
+              {paymentStatus === 'paid' ? (
+                <>
+                  <CheckCircle2 className="text-green-600" size={24} />
+                  <span className="font-bold text-green-600 uppercase tracking-wider">Pembayaran Lunas</span>
+                </>
+              ) : (
+                <>
+                  <Clock className="text-orange-600" size={24} />
+                  <span className="font-bold text-orange-600 uppercase tracking-wider">
+                    {paymentStatus === 'partial' ? 'Pembayaran Sebagian (DP)' : 'Menunggu Pembayaran'}
+                  </span>
+                </>
+              )}
+            </div>
+
+            {/* Bank Account Info - Always show */}
+            {(settings.bank_name || settings.bank_account_number) && (
+              <div className={`mt-8 p-6 rounded-xl border-2 ${remaining > 0 ? 'bg-blue-50 border-blue-200' : 'bg-green-50 border-green-200'}`}>
+                <h3 className={`text-sm font-bold mb-4 flex items-center gap-2 ${remaining > 0 ? 'text-blue-900' : 'text-green-900'}`}>
+                  <Wallet size={18} />
+                  Informasi Rekening Pembayaran
+                </h3>
+                <div className="space-y-2 text-sm">
+                  {settings.bank_name && (
+                    <div className="flex justify-between">
+                      <span className={remaining > 0 ? 'text-blue-700' : 'text-green-700'}>Bank:</span>
+                      <span className={`font-bold ${remaining > 0 ? 'text-blue-900' : 'text-green-900'}`}>{settings.bank_name}</span>
+                    </div>
+                  )}
+                  {settings.bank_account_number && (
+                    <div className="flex justify-between">
+                      <span className={remaining > 0 ? 'text-blue-700' : 'text-green-700'}>No. Rekening:</span>
+                      <span className={`font-bold font-mono text-base tracking-wider ${remaining > 0 ? 'text-blue-900' : 'text-green-900'}`}>{settings.bank_account_number}</span>
+                    </div>
+                  )}
+                  {settings.bank_account_name && (
+                    <div className="flex justify-between">
+                      <span className={remaining > 0 ? 'text-blue-700' : 'text-green-700'}>Atas Nama:</span>
+                      <span className={`font-bold ${remaining > 0 ? 'text-blue-900' : 'text-green-900'}`}>{settings.bank_account_name}</span>
+                    </div>
+                  )}
+                  {remaining > 0 && (
+                    <div className="mt-4 pt-4 border-t-2 border-blue-200 flex justify-between items-center">
+                      <span className="text-blue-700 font-bold">Jumlah yang Harus Dibayar:</span>
+                      <span className="text-xl font-bold text-red-600">{formatRupiah(remaining)}</span>
+                    </div>
+                  )}
+                  {remaining <= 0 && (
+                    <div className="mt-4 pt-4 border-t-2 border-green-200 flex justify-between items-center">
+                      <span className="text-green-700 font-bold">Status:</span>
+                      <span className="text-lg font-bold text-green-600">Pembayaran Lunas ✓</span>
+                    </div>
+                  )}
+                </div>
+                {remaining > 0 && (
+                  <p className="text-xs text-blue-600 mt-4 italic">
+                    Silakan transfer ke rekening di atas dan kirimkan bukti transfer ke WhatsApp kami.
+                  </p>
+                )}
               </div>
             )}
           </div>
 
-          {/* Footer: Signature + Summary */}
-          <div className="mt-auto">
-            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-8">
-              {/* Tanda Terima */}
-              <div className="flex-1">
-                <h3 className="text-[10px] uppercase tracking-[0.2em] text-[#9ca3af] font-bold mb-8">TANDA TERIMA</h3>
-                <div className="flex gap-10">
-                  <div className="text-center">
-                    <div className="w-44 h-20 border-b-2 border-[#111827] mb-2 relative flex items-center justify-center">
-                      {settings.admin_signature ? (
-                        <img
-                          src={settings.admin_signature}
-                          alt="Tanda Tangan"
-                          className="absolute h-16 w-auto object-contain z-10"
-                        />
-                      ) : (
-                        <p className="text-[#e5e7eb] text-[10px] mt-10 italic">Tanda tangan admin</p>
-                      )}
-                      {isPaidOff && (
-                        <div className="absolute inset-0 flex items-center justify-center opacity-10 pointer-events-none rotate-[-12deg] z-20">
-                          <div className="border-4 border-[#16a34a] text-[#16a34a] font-black text-3xl px-6 py-2 rounded-2xl">LUNAS</div>
-                        </div>
-                      )}
-                    </div>
-                    <p className="text-[10px] font-black text-[#1F2021] uppercase tracking-widest">
-                      {settings.site_logo_text || settings.site_title || 'ADMIN'}
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Ringkasan Pembayaran */}
-              <div className="w-full sm:w-72 space-y-3 bg-[#f9fafb] p-5 sm:p-8 rounded-2xl">
-                <div className="flex justify-between items-center text-[10px] font-bold text-[#9ca3af] uppercase tracking-widest">
-                  <span>Total Biaya</span>
-                  <span className="text-[#1F2021]">{formatRupiah(total.toString())}</span>
-                </div>
-                <div className="flex justify-between items-center text-[10px] font-bold text-[#9ca3af] uppercase tracking-widest">
-                  <span>Sudah Dibayar</span>
-                  <span className="text-[#16a34a]">{formatRupiah(paid.toString())}</span>
-                </div>
-                <div className="pt-4 border-t border-[#e5e7eb] flex justify-between items-center">
-                  <span className="text-xs font-black uppercase tracking-widest text-[#1F2021]">Sisa Tagihan</span>
-                  <div className="text-right">
-                    <span className={`text-xl sm:text-2xl font-black ${isPaidOff ? 'text-[#16a34a]' : 'text-[#ef4444]'}`}>
-                      {isPaidOff ? 'Rp 0' : formatRupiah(sisa.toString())}
-                    </span>
-                    {isPaidOff && (
-                      <p className="text-[8px] font-bold text-[#16a34a] uppercase tracking-tighter mt-1 leading-none">Status: Lunas</p>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="mt-10 pt-6 border-t border-[#f3f4f6] flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1">
-              <p className="text-[9px] text-[#9ca3af] font-bold uppercase tracking-widest leading-none">
-                {settings.site_title || 'PHOTOBOOTH'} © {new Date().getFullYear()}
-              </p>
-              <p className="text-[9px] text-[#9ca3af] italic leading-none">Dokumen ini sah diproses secara digital.</p>
-            </div>
+          {/* Footer */}
+          <div className="bg-gray-50 p-8 border-t border-gray-100">
+            <p className="text-xs text-gray-500 text-center">
+              Terima kasih atas kepercayaan Anda. Untuk pertanyaan, hubungi kami di {settings.company_phone || settings.company_email || 'kontak kami'}.
+            </p>
+            <p className="text-xs text-gray-400 text-center mt-2">
+              Invoice ini dibuat secara otomatis dan sah tanpa tanda tangan.
+            </p>
           </div>
         </div>
       </div>
     </div>
   );
-}
+};
+
+export default InvoicePage;

@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Upload, CheckCircle2, X, Loader2, Check } from 'lucide-react';
+import { Upload, CheckCircle2, X, Loader2, Check, Wallet, Copy } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useSettings } from '../hooks/useSettings';
 import { Section } from '../components/ui/Section';
@@ -513,8 +513,85 @@ const BookingPage = () => {
                   <span className="text-[#1F2021]">Total Tagihan</span>
                   <span className="text-xl text-[#1F2021]">{formatRupiah(calculateTotal())}</span>
                 </div>
+                {form.dp_amount && getNumeric(form.dp_amount) > 0 && (
+                  <>
+                    <div className="flex justify-between items-center text-green-600">
+                      <span>DP / Sudah Dibayar</span>
+                      <span className="font-semibold">- {formatRupiah(getNumeric(form.dp_amount))}</span>
+                    </div>
+                    <div className="pt-3 border-t border-gray-200 flex justify-between items-center font-bold">
+                      <span className="text-red-600">Sisa Tagihan</span>
+                      <span className="text-xl text-red-600">
+                        {calculateTotal() - getNumeric(form.dp_amount) > 0
+                          ? formatRupiah(calculateTotal() - getNumeric(form.dp_amount))
+                          : 'LUNAS'}
+                      </span>
+                    </div>
+                  </>
+                )}
               </div>
             </div>
+
+            {/* Info Rekening Bank */}
+            {(settings.bank_name || settings.bank_account_number) && (
+              <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-6">
+                <h3 className="text-sm font-bold text-blue-900 mb-4 flex items-center gap-2">
+                  <Wallet size={18} />
+                  Informasi Rekening Pembayaran
+                </h3>
+                <div className="space-y-3 text-sm">
+                  {settings.bank_name && (
+                    <div className="flex justify-between items-center">
+                      <span className="text-blue-700">Bank</span>
+                      <span className="font-bold text-blue-900">{settings.bank_name}</span>
+                    </div>
+                  )}
+                  {settings.bank_account_number && (
+                    <div className="flex justify-between items-center">
+                      <span className="text-blue-700">No. Rekening</span>
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold text-blue-900 font-mono text-base tracking-wider">
+                          {settings.bank_account_number}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            navigator.clipboard.writeText(settings.bank_account_number);
+                          }}
+                          className="p-1 rounded hover:bg-blue-200 text-blue-600 transition-colors"
+                          title="Salin nomor rekening"
+                        >
+                          <Copy size={14} />
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                  {settings.bank_account_name && (
+                    <div className="flex justify-between items-center">
+                      <span className="text-blue-700">Atas Nama</span>
+                      <span className="font-bold text-blue-900">{settings.bank_account_name}</span>
+                    </div>
+                  )}
+                  {calculateTotal() > 0 && (
+                    <div className="mt-4 pt-4 border-t-2 border-blue-200 flex justify-between items-center">
+                      <span className="text-blue-700 font-bold">
+                        {form.dp_amount && getNumeric(form.dp_amount) > 0 ? 'Sisa yang Harus Dibayar:' : 'Total yang Harus Dibayar:'}
+                      </span>
+                      <span className="text-xl font-bold text-red-600">
+                        {form.dp_amount && getNumeric(form.dp_amount) > 0
+                          ? (calculateTotal() - getNumeric(form.dp_amount) > 0
+                              ? formatRupiah(calculateTotal() - getNumeric(form.dp_amount))
+                              : 'LUNAS')
+                          : formatRupiah(calculateTotal())}
+                      </span>
+                    </div>
+                  )}
+                </div>
+                <p className="text-xs text-blue-600 mt-4 italic">
+                  Silakan transfer ke rekening di atas dan upload bukti transfer di bawah.
+                </p>
+              </div>
+            )}
 
             {/* Upload Bukti Transfer */}
             <div>
@@ -532,6 +609,7 @@ const BookingPage = () => {
                 placeholder="cth. 500000"
                 className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#1F2021] transition-colors bg-white font-mono"
               />
+              <p className="text-xs text-gray-400 mt-1">Isi jika kamu membayar DP atau sebagian. Kosongkan jika belum transfer.</p>
             </div>
 
             <div>

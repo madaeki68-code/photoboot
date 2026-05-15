@@ -30,6 +30,14 @@ const SettingsTab: React.FC = () => {
     social_twitter: '',
     social_pexels: '',
     services_title: '',
+    company_name: '',
+    company_address: '',
+    company_phone: '',
+    company_email: '',
+    company_logo: '',
+    bank_name: '',
+    bank_account_number: '',
+    bank_account_name: '',
   });
 
   const [siteServices, setSiteServices] = useState<any[]>([]);
@@ -62,6 +70,14 @@ const SettingsTab: React.FC = () => {
         social_twitter: settings.social_twitter || '',
         social_pexels: settings.social_pexels || '',
         services_title: settings.services_title || '',
+        company_name: settings.company_name || '',
+        company_address: settings.company_address || '',
+        company_phone: settings.company_phone || '',
+        company_email: settings.company_email || '',
+        company_logo: settings.company_logo || '',
+        bank_name: settings.bank_name || '',
+        bank_account_number: settings.bank_account_number || '',
+        bank_account_name: settings.bank_account_name || '',
       });
       setSiteServices(settings.site_services || []);
       setSiteTeam(settings.site_team || []);
@@ -132,6 +148,102 @@ const SettingsTab: React.FC = () => {
       </div>
 
       <form onSubmit={handleSave} className="space-y-24">
+        {/* ── 0. Company Info (for Invoice) ── */}
+        <DashboardSection
+          title="Informasi Perusahaan"
+          description="Data perusahaan untuk Invoice dan dokumen resmi."
+        >
+          <div className="bg-blue-50 border border-blue-100 rounded-xl p-6 mb-6">
+            <p className="text-sm text-blue-800">
+              <strong>Info:</strong> Data ini akan muncul di Invoice yang digenerate untuk klien. Pastikan informasi akurat dan profesional.
+            </p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <FormField label="Nama Perusahaan" subtitle="Nama resmi bisnis Anda">
+              <input
+                type="text"
+                value={settingsData.company_name}
+                onChange={(e) => set('company_name', e.target.value)}
+                className="dashboard-input"
+                placeholder="cth. PT Kalo Photobooth Indonesia"
+              />
+            </FormField>
+            <FormField label="Email Perusahaan" subtitle="Email untuk invoice & komunikasi resmi">
+              <input
+                type="email"
+                value={settingsData.company_email}
+                onChange={(e) => set('company_email', e.target.value)}
+                className="dashboard-input"
+                placeholder="cth. invoice@kalophotobooth.com"
+              />
+            </FormField>
+            <FormField label="Nomor Telepon" subtitle="Nomor kontak perusahaan">
+              <input
+                type="text"
+                value={settingsData.company_phone}
+                onChange={(e) => set('company_phone', e.target.value)}
+                className="dashboard-input"
+                placeholder="cth. +62 812-3456-7890"
+              />
+            </FormField>
+            <FormField label="Alamat Lengkap" subtitle="Alamat kantor/operasional">
+              <textarea
+                rows={3}
+                value={settingsData.company_address}
+                onChange={(e) => set('company_address', e.target.value)}
+                className="dashboard-textarea"
+                placeholder="cth. Jl. Sudirman No. 123, Jakarta Selatan 12190"
+              />
+            </FormField>
+          </div>
+          <div className="mt-6">
+            <ImageUpload
+              label="Logo Perusahaan (untuk Invoice)"
+              value={settingsData.company_logo}
+              onChange={(url) => set('company_logo', url)}
+            />
+            <p className="text-xs text-gray-500 mt-2">
+              Logo ini akan muncul di header invoice. Gunakan format PNG dengan background transparan untuk hasil terbaik.
+            </p>
+          </div>
+
+          <div className="mt-8 pt-8 border-t border-gray-100">
+            <h4 className="text-sm font-bold text-[#1F2021] mb-4">Informasi Rekening Bank</h4>
+            <p className="text-xs text-gray-500 mb-6">
+              Informasi rekening ini akan ditampilkan di invoice dan form booking untuk memudahkan klien melakukan pembayaran.
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <FormField label="Nama Bank" subtitle="Contoh: BCA, Mandiri, BNI">
+                <input
+                  type="text"
+                  value={settingsData.bank_name}
+                  onChange={(e) => set('bank_name', e.target.value)}
+                  className="dashboard-input"
+                  placeholder="cth. Bank BCA"
+                />
+              </FormField>
+              <FormField label="Nomor Rekening" subtitle="Nomor rekening lengkap">
+                <input
+                  type="text"
+                  value={settingsData.bank_account_number}
+                  onChange={(e) => set('bank_account_number', e.target.value)}
+                  className="dashboard-input"
+                  placeholder="cth. 1234567890"
+                />
+              </FormField>
+              <FormField label="Atas Nama" subtitle="Nama pemilik rekening">
+                <input
+                  type="text"
+                  value={settingsData.bank_account_name}
+                  onChange={(e) => set('bank_account_name', e.target.value)}
+                  className="dashboard-input"
+                  placeholder="cth. PT Kalo Photobooth"
+                />
+              </FormField>
+            </div>
+          </div>
+        </DashboardSection>
+
         {/* ── 1. Identity & Contact ── */}
         <DashboardSection
           title="Identity & Contact"
