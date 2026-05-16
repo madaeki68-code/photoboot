@@ -186,6 +186,8 @@ const BookingPage = () => {
 
       const total = calculateTotal();
 
+      const dpNumeric = getNumeric(form.dp_amount);
+
       const payload = {
         name: form.name,
         whatsapp: form.whatsapp,
@@ -199,11 +201,35 @@ const BookingPage = () => {
         payment_proof_url: proofUrl,
         status: 'pending',
         total_price: formatRupiah(total),
-        paid_amount: form.dp_amount || 'Rp 0',
+        total_price_numeric: total,           // FIX #1: isi kolom numeric
+        paid_amount: dpNumeric > 0 ? formatRupiah(dpNumeric) : 'Rp 0',
+        paid_amount_numeric: dpNumeric,       // FIX #1: isi kolom numeric
       };
 
-      const { error: insertError } = await supabase.from('bookings').insert([payload]);
+      const { data: newBooking, error: insertError } = await supabase.from('bookings').insert([payload]).select().single();
       if (insertError) throw insertError;
+
+      if (dpNumeric > 0 && newBooking) {
+        // Simpan ke history pembayaran (payments)
+        await supabase.from('payments').insert([{
+          booking_id: newBooking.id,
+          amount: dpNumeric,
+          payment_method: 'transfer',
+          payment_date: new Date().toISOString(),
+          verified: false
+        }]);
+
+        // Catat sebagai pemasukan di finance (transactions)
+        await supabase.from('transactions').insert([{
+          type: 'income',
+          category: 'Booking Photobooth',
+          description: `DP Booking — ${form.name}`,
+          amount: dpNumeric,
+          payment_method: 'transfer',
+          transaction_date: new Date().toISOString().split('T')[0],
+          notes: `Booking ID: ${newBooking.id.slice(0, 8).toUpperCase()} | Paket: ${form.package_name || '-'}`,
+        }]);
+      }
 
       setSubmitted(true);
     } catch (err: any) {

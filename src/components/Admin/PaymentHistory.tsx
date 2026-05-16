@@ -49,12 +49,29 @@ const PaymentHistory: React.FC<PaymentHistoryProps> = ({
   });
 
   useEffect(() => {
-    fetchPayments();
+    const init = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('payments')
+          .select('*')
+          .eq('booking_id', bookingId)
+          .order('payment_date', { ascending: false });
+
+        const fetched = error ? [] : (data || []);
+        setPayments(fetched);
+        await syncPaidAmountFromPayments(fetched);
+      } catch (err) {
+        console.error('Init error:', err);
+        setPayments([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    init();
   }, [bookingId]);
 
   const fetchPayments = async () => {
     try {
-      // Query payments using booking_id
       const { data, error } = await supabase
         .from('payments')
         .select('*')
@@ -75,6 +92,45 @@ const PaymentHistory: React.FC<PaymentHistoryProps> = ({
     }
   };
 
+  // FIX #3 & #4: Selalu recalculate dari SUM tabel payments setelah fetch.
+  // Jika payments kosong tapi bookings.paid_amount_numeric > 0 (data lama),
+  // otomatis migrasi satu record ke tabel payments agar sinkron.
+  const syncPaidAmountFromPayments = async (currentPayments: Payment[]) => {
+    const sumFromPayments = currentPayments.reduce((s, p) => s + p.amount, 0);
+
+    // Jika payments kosong tapi ada nilai di bookings → migrasi data lama
+    if (currentPayments.length === 0 && paidAmount > 0) {
+      try {
+        await supabase.from('payments').insert([{
+          booking_id: bookingId,
+          amount: paidAmount,
+          payment_method: 'transfer',
+          payment_date: new Date().toISOString(),
+          verified: true,
+        }]);
+        // Refresh setelah migrasi
+        const { data } = await supabase
+          .from('payments')
+          .select('*')
+          .eq('booking_id', bookingId)
+          .order('payment_date', { ascending: false });
+        setPayments(data || []);
+        return;
+      } catch (err) {
+        console.error('Migration error:', err);
+      }
+    }
+
+    // Pastikan bookings.paid_amount_numeric selalu = SUM payments
+    if (sumFromPayments !== paidAmount) {
+      await supabase.from('bookings').update({
+        paid_amount: formatRupiah(sumFromPayments),
+        paid_amount_numeric: sumFromPayments,
+      }).eq('id', bookingId);
+      onUpdate(); // refresh parent
+    }
+  };
+
   const handleAddPayment = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -86,7 +142,7 @@ const PaymentHistory: React.FC<PaymentHistoryProps> = ({
 
     try {
       const { error } = await supabase.from('payments').insert([{
-        booking_id: bookingId, // Use booking_id instead of invoice_id
+        booking_id: bookingId,
         amount,
         payment_method: newPayment.payment_method,
         payment_date: new Date(newPayment.payment_date).toISOString(),
@@ -98,17 +154,31 @@ const PaymentHistory: React.FC<PaymentHistoryProps> = ({
         throw error;
       }
 
-      // Update booking paid_amount
-      const newTotalPaid = paidAmount + amount;
+      // Recalculate dari SUM payments terbaru
+      const { data: updatedPayments } = await supabase
+        .from('payments')
+        .select('amount')
+        .eq('booking_id', bookingId);
+
+      const newTotalPaid = (updatedPayments || []).reduce((s, p) => s + p.amount, 0);
+
       const { error: updateError } = await supabase.from('bookings').update({
         paid_amount: formatRupiah(newTotalPaid),
-        paid_amount_numeric: newTotalPaid
+        paid_amount_numeric: newTotalPaid,
       }).eq('id', bookingId);
 
-      if (updateError) {
-        console.error('Update error:', updateError);
-        throw updateError;
-      }
+      if (updateError) throw updateError;
+
+      // Sync ke tabel transactions sebagai pemasukan
+      await supabase.from('transactions').insert([{
+        type: 'income',
+        category: 'Booking Photobooth',
+        description: `Pembayaran booking — ${bookingName}`,
+        amount,
+        payment_method: newPayment.payment_method,
+        transaction_date: newPayment.payment_date,
+        notes: `Booking ID: ${bookingId.slice(0, 8).toUpperCase()}`,
+      }]);
 
       setNewPayment({
         amount: '',
@@ -136,12 +206,26 @@ const PaymentHistory: React.FC<PaymentHistoryProps> = ({
 
       if (error) throw error;
 
-      // Update booking paid_amount
-      const newTotalPaid = paidAmount - payment.amount;
+      // Recalculate dari sisa payments setelah delete
+      const { data: remainingPayments } = await supabase
+        .from('payments')
+        .select('amount')
+        .eq('booking_id', bookingId);
+
+      const newTotalPaid = (remainingPayments || []).reduce((s, p) => s + p.amount, 0);
+
       await supabase.from('bookings').update({
         paid_amount: formatRupiah(newTotalPaid),
-        paid_amount_numeric: newTotalPaid
+        paid_amount_numeric: newTotalPaid,
       }).eq('id', bookingId);
+
+      // Hapus transaksi terkait dari tabel transactions
+      // Cari berdasarkan notes yang berisi booking ID dan jumlah yang sama
+      await supabase.from('transactions')
+        .delete()
+        .eq('type', 'income')
+        .eq('amount', payment.amount)
+        .ilike('notes', `%${bookingId.slice(0, 8).toUpperCase()}%`);
 
       fetchPayments();
       onUpdate();
@@ -151,6 +235,8 @@ const PaymentHistory: React.FC<PaymentHistoryProps> = ({
     }
   };
 
+  // FIX #4 & #5: Satu sumber kebenaran — selalu dari SUM tabel payments.
+  // Data lama sudah dimigrasi otomatis di useEffect init.
   const totalPayments = payments.reduce((sum, p) => sum + p.amount, 0);
   const remaining = totalPrice - totalPayments;
 

@@ -65,7 +65,7 @@ const Team = () => {
           </Typography>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8 max-w-4xl mx-auto px-4 sm:px-6">
           {team.map((member, index) => (
             <motion.div
               key={index}
@@ -75,7 +75,7 @@ const Team = () => {
               transition={{ delay: index * 0.1, duration: 0.5 }}
               className="group"
             >
-              <div className="aspect-[4/5] overflow-hidden rounded-2xl bg-gray-100 mb-6 relative">
+              <div className="aspect-[4/5] overflow-hidden rounded-2xl bg-gray-100 mb-4 relative">
                 {member.image ? (
                   <img
                     src={member.image}
@@ -89,11 +89,11 @@ const Team = () => {
                 )}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
               </div>
-              <div className="text-center">
-                <Typography variant="h4" className="mb-1 text-lg font-black uppercase tracking-tight">
+              <div className="text-center px-1">
+                <Typography variant="h4" className="mb-1 text-base sm:text-lg font-black uppercase tracking-tight">
                   {member.name}
                 </Typography>
-                <Typography variant="p" className="text-sm text-gray-400 uppercase tracking-widest font-bold">
+                <Typography variant="p" className="text-xs sm:text-sm text-gray-400 uppercase tracking-widest font-bold">
                   {member.role}
                 </Typography>
               </div>
