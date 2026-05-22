@@ -46,7 +46,7 @@ const PackagesPage = () => {
   return (
     <div className="bg-white min-h-screen">
       {/* Hero */}
-      <div className="pt-40 pb-20 px-6 md:px-12 max-w-[1400px] mx-auto">
+      <div className="pt-32 pb-10 px-4 md:pt-40 md:pb-20 md:px-12 max-w-[1400px] mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
@@ -67,17 +67,12 @@ const PackagesPage = () => {
 
       {/* Packages */}
       <Section id="packages" className="bg-gray-50">
-        <div className="mb-12 text-center">
-          <Typography variant="label" className="mb-4 block">Paket Kami</Typography>
-          <Typography variant="h2" className="italic">Temukan Paket Terbaikmu</Typography>
-        </div>
-
         {packages.length === 0 ? (
           <div className="text-center py-24 text-gray-400">
             <Typography variant="p">Paket belum tersedia. Silakan cek kembali nanti.</Typography>
           </div>
         ) : (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6 px-4 md:px-0 max-w-sm sm:max-w-none mx-auto">
             {packages.map((pkg: any, idx: number) => {
               const isPopular = pkg.popular === true || pkg.popular === 'true';
               const isSelected = selectedPkg === (pkg.name || idx.toString());
@@ -89,7 +84,7 @@ const PackagesPage = () => {
                   viewport={{ once: true }}
                   transition={{ delay: idx * 0.1 }}
                   onClick={() => setSelectedPkg(pkg.name || idx.toString())}
-                  className={`relative rounded-2xl border-2 p-8 cursor-pointer transition-all duration-300 text-center flex flex-col items-center ${
+                  className={`relative rounded-xl md:rounded-2xl border-2 p-3 md:p-8 cursor-pointer transition-all duration-300 text-center flex flex-col items-center ${
                     isSelected
                       ? 'border-[#1F2021] bg-[#1F2021] text-white shadow-xl scale-[1.02]'
                       : isPopular
@@ -98,13 +93,13 @@ const PackagesPage = () => {
                   }`}
                 >
                   {isPopular && !isSelected && (
-                    <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#1F2021] text-white text-[10px] uppercase tracking-widest px-3 py-1 rounded-full whitespace-nowrap">
+                    <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-[#1F2021] text-white text-[8px] md:text-[10px] uppercase tracking-widest px-2 md:px-3 py-0.5 md:py-1 rounded-full whitespace-nowrap">
                       Terpopuler
                     </span>
                   )}
-                  <div className="mb-6 w-full text-center flex flex-col items-center">
+                  <div className="mb-3 md:mb-6 w-full text-center flex flex-col items-center">
                     {pkg.cover_image && (
-                      <div className="w-full h-40 mb-6 rounded-xl overflow-hidden bg-gray-100">
+                      <div className="w-full mb-3 md:mb-6 rounded-lg md:rounded-xl overflow-hidden bg-gray-100" style={{ aspectRatio: '1920/1350' }}>
                         <img 
                           src={pkg.cover_image} 
                           alt={pkg.name} 
@@ -113,23 +108,23 @@ const PackagesPage = () => {
                       </div>
                     )}
                     {pkg.category && (
-                      <span className={`text-[10px] uppercase tracking-widest font-bold px-2 py-1 rounded mb-3 inline-block ${isSelected ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-500'}`}>
+                      <span className={`text-[8px] md:text-[10px] uppercase tracking-widest font-bold px-1.5 md:px-2 py-0.5 md:py-1 rounded mb-2 md:mb-3 inline-block ${isSelected ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-500'}`}>
                         {pkg.category}
                       </span>
                     )}
                     <Typography
                       variant="h3"
-                      className={`mb-2 ${isSelected ? 'text-white' : ''}`}
+                      className={`mb-1 md:mb-2 text-sm md:text-base ${isSelected ? 'text-white' : ''}`}
                     >
                       {pkg.name || `Paket ${idx + 1}`}
                     </Typography>
-                    <div className={`text-4xl md:text-3xl font-bold tracking-tighter ${isSelected ? 'text-white' : 'text-[#1F2021]'}`}>
+                    <div className={`text-base md:text-3xl font-bold tracking-tighter ${isSelected ? 'text-white' : 'text-[#1F2021]'}`}>
                       {pkg.price || 'Hubungi Kami'}
                     </div>
                     {pkg.duration && (
                       <Typography
                         variant="label"
-                        className={`mt-1 block ${isSelected ? 'text-white/60' : 'text-gray-400'}`}
+                        className={`mt-0.5 md:mt-1 block text-[10px] md:text-xs ${isSelected ? 'text-white/60' : 'text-gray-400'}`}
                       >
                         {pkg.duration}
                       </Typography>
@@ -139,20 +134,20 @@ const PackagesPage = () => {
                   {pkg.description && (
                     <Typography
                       variant="p"
-                      className={`text-sm mb-6 ${isSelected ? 'text-white/70' : 'text-gray-500'}`}
+                      className={`text-xs md:text-sm mb-3 md:mb-6 ${isSelected ? 'text-white/70' : 'text-gray-500'}`}
                     >
                       {pkg.description}
                     </Typography>
                   )}
 
-                  <ul className="space-y-3 mb-8 w-full">
+                  <ul className="space-y-1.5 md:space-y-3 mb-4 md:mb-8 w-full text-left">
                     {(pkg.features || []).map((feature: string, fIdx: number) => (
-                      <li key={fIdx} className="flex items-center justify-center gap-3">
+                      <li key={fIdx} className="flex items-start gap-1.5 md:gap-3">
                         <Check 
-                          size={16} 
-                          className={`shrink-0 ${isSelected ? 'text-white' : 'text-[#1F2021]'}`} 
+                          size={12}
+                          className={`shrink-0 mt-0.5 ${isSelected ? 'text-white' : 'text-[#1F2021]'}`} 
                         />
-                        <span className={`text-sm ${isSelected ? 'text-white/80' : 'text-gray-600'}`}>
+                        <span className={`text-[11px] md:text-sm leading-tight ${isSelected ? 'text-white/80' : 'text-gray-600'}`}>
                           {feature}
                         </span>
                       </li>
@@ -161,14 +156,14 @@ const PackagesPage = () => {
 
                   <Link
                     to={`/booking?package=${encodeURIComponent(pkg.name || '')}`}
-                    className={`flex items-center justify-center gap-2 w-full py-3 rounded-full text-sm font-medium transition-all ${
+                    className={`flex items-center justify-center gap-1.5 md:gap-2 w-full py-2 md:py-3 rounded-full text-[11px] md:text-sm font-medium transition-all ${
                       isSelected
                         ? 'bg-white text-[#1F2021] hover:bg-gray-100'
                         : 'bg-[#1F2021] text-white hover:bg-gray-800'
                     }`}
                     onClick={(e) => e.stopPropagation()}
                   >
-                    Pesan Sekarang <ArrowRight size={16} />
+                    Pesan Sekarang <ArrowRight size={12} className="md:w-4 md:h-4" />
                   </Link>
                 </motion.div>
               );

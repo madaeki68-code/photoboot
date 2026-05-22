@@ -22,7 +22,6 @@ const About = () => {
       <div className="grid md:grid-cols-12 gap-12 md:gap-24">
         <div className="md:col-span-5 md:sticky md:top-32 h-fit">
           <FadeIn direction="up">
-            <Typography variant="label" className="mb-6 block text-accent">Bab 01 — Filosofi</Typography>
             <Typography variant="h2" className="mb-8">
               {aboutData.title || "Seni Keabadian Dalam Diam"}
             </Typography>
@@ -53,12 +52,7 @@ const About = () => {
                     <ImageIcon size={32} strokeWidth={1} className="text-gray-200" />
                   </div>
                 )}
-                {aboutData.location && (
-                  <div className="absolute top-6 right-6 mix-blend-difference text-white">
-                    <Typography variant="label" className="text-white/60 mb-1 block">Lok.</Typography>
-                    <Typography variant="cap" className="text-white">{aboutData.location}</Typography>
-                  </div>
-                )}
+
               </div>
 
               {/* Gambar 2 — sedikit turun untuk efek stagger */}

@@ -14,9 +14,6 @@ const Footer = () => {
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col md:flex-row justify-between items-start gap-16 mb-24">
           <div className="max-w-md">
-            <Typography variant="h2" className="text-white mb-6 italic font-medium tracking-tighter text-2xl md:text-3xl">
-              Mari abadikan momen berharga Anda.
-            </Typography>
             <Typography variant="p" className="text-white/50 text-sm mb-8">
               {settings.contact_address || 'Jakarta, Indonesia'}
             </Typography>
